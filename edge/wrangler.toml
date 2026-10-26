@@ -1,0 +1,17 @@
+name = "sol-uvix-edge"
+main = "worker.ts"
+compatibility_date = "2026-05-01"
+
+[routes]
+pattern = "uvix.leaksnipe.win/uvix*"
+custom_domain = true
+
+[[d1_databases]]
+binding = "WECRYPTO_D1"
+database_name = "wecrypto"
+database_id = "4f534c4a-b8e3-4381-a2eb-29e44ba3e825"
+
+[[d1_databases]]
+binding = "SCALPER_D1"
+database_name = "scalper"
+database_id = "48536b22-03b3-42dd-92fa-44feab144d84"

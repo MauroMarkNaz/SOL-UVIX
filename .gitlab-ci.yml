@@ -1,0 +1,42 @@
+image: python:3.11-slim
+
+stages:
+  - test
+  - build
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+before_script:
+  - python -V
+  - python -m venv venv
+  - . venv/bin/activate
+  - pip install --upgrade pip
+  - pip install -e .[dev]
+
+unit-tests:
+  stage: test
+  script:
+    - pytest tests/ -v
+
+node-roundtrip-test:
+  stage: test
+  image: node:20-alpine
+  before_script:
+    - node -v
+  script:
+    - node tests/test_roundtrip.js
+
+build-package:
+  stage: build
+  script:
+    - pip install build
+    - python -m build
+  artifacts:
+    paths:
+      - dist/
