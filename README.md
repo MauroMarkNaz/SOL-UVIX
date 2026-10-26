@@ -1,18 +1,59 @@
-# SOL-UVIX: Solana Stack & UVIX-RI-1.0 Interoperability Protocol
+# UVIX-SOL: Post-Quantum Cryptography, Solana On-Chain Verification & UVIX-RI-1.0 Mesh
 
-[![CI](https://github.com/johndawalka/SOL-UVIX/actions/workflows/ci.yml/badge.svg)](https://github.com/johndawalka/SOL-UVIX/actions)
+[![Solana Program](https://img.shields.io/badge/Solana-Anchor%201.2.1-14F195?logo=solana)](https://solana.com)
+[![IDL Registry](https://img.shields.io/badge/IDL-wecrytpo.app.leaksnipe.idl.win-0052FF)](https://wecrytpo.app.leaksnipe.idl.win)
+[![PQC Security](https://img.shields.io/badge/Security-Post--Quantum%20(Kyber%2FDilithium)-black)](PQC_SECURITY.md)
+[![Mesh Protocol](https://img.shields.io/badge/Mesh-UVIX--RI--1.0-blueviolet)](https://uvix.leaksnipe.win/uvix)
+[![Hardware Split](https://img.shields.io/badge/Hardware-NPU%20%7C%20RTX%204070-76B900)](#5-hardware-workload-split-npu--gpu)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Protocol](https://img.shields.io/badge/Protocol-UVIX--RI--1.0-blue.svg)](https://uvix.leaksnipe.win/uvix)
 
-High-performance cryptographic bridge, SDK, and edge runtime for encapsulating the Solana blockchain stack into the canonical **UVIX Slug Protocol (`UVIX-RI-1.0`)**.
-
-Enables deterministic, zero-trust telemetry streaming and cross-agent execution across **Solana RPCs**, **Pump.fun bonding curves**, **Raydium AMMs**, **Cloudflare Workers**, **Discord bots**, and real-time **Parallel CFR game-theoretic solvers**.
+UVIX-SOL provides the unified Solana on-chain anchoring layer, post-quantum cryptographic (PQC) validation pipeline, and zero-trust multi-agent telemetry protocol for the **LeakSnipe / WeCrypto** estate. It combines on-chain Proof-of-History state commits, calibrated predictive market settlement with Brier scoring, token forensic verification, lattice-based cryptographic signing, and heterogeneous hardware offloading.
 
 ---
 
-## 🌟 Key Features
+## 1. Solana On-Chain Program: `WeCrypto`
 
-- **UVIX-RI-1.0 Envelope Framing**: Canonical `UVIX::<base64>::END` formatting with deterministic SHA-256 payload integrity hashing (`payload_hash`).
+* **Program ID**: `9HLcTyxqXTimBXj9RvP2dZtTwZsNdzdiGRNRdUTTUp5B`
+* **Canonical IDL**: [`idl/wecrypto.json`](idl/wecrypto.json) and [`solana/wecrypto/app/idl/wecrypto.json`](solana/wecrypto/app/idl/wecrypto.json)
+* **Hosted IDL URI**: `https://wecrytpo.app.leaksnipe.idl.win/idl/wecrypto.json`
+* **Framework**: Anchor `1.2.1` / Agave SDK `v3.1+` / Rust `1.89+`
+
+### Instructions
+
+| Instruction | Accounts & Discriminator | Purpose |
+| :--- | :--- | :--- |
+| `initialize` | `[payer, config, system_program]` | Initializes the singleton `GlobalConfig` PDA with admin authority and canonical IDL endpoint. |
+| `record_turn_proof` | `[payer, config, turn_anchor, system_program]` | Commits a strictly monotonic state turn hash (`[u8; 32]`) anchored to Cloudflare D1 proof turns and Solana slot height. |
+| `commit_prediction` | `[payer, config, commitment, system_program]` | Cryptographically commits market probability forecasts (touch/settle basis points) before expiration horizons. |
+| `resolve_prediction` | `[authority, config, commitment]` | Records realized market settlement outcomes, settlement price, and quadratic Brier score loss. |
+| `log_token_signal` | `[payer, config, signal_record, system_program]` | Stores on-chain forensic assessment (risk score, LP burn/lock status, bundle cluster detection, metadata hash). |
+| `update_config` | `[authority, config]` | Administrative pause controls, authority migration, and IDL URI updates. |
+
+### Program Derived Addresses (PDAs)
+
+```rust
+// Global configuration singleton
+[b"global_config"]
+
+// Proof-of-History turn state commits
+[b"poh_turn", sequence.to_le_bytes().as_ref()]
+
+// Horizon prediction commitments
+[b"prediction", sequence.to_le_bytes().as_ref()]
+
+// Token security & rugcheck forensics
+[b"token_signal", token_mint.as_ref()]
+```
+
+---
+
+## 2. SOL-UVIX Interoperability Protocol Suite (`UVIX-RI-1.0`)
+
+Enables deterministic, zero-trust telemetry streaming and cross-agent execution across **Solana RPCs**, **Pump.fun bonding curves**, **Raydium AMMs**, **Cloudflare Workers**, **Discord bots**, and real-time **Parallel CFR game-theoretic solvers**.
+
+### Key Modules (`sol_uvix/`)
+
+- **UVIX-RI-1.0 Envelope Framing**: Canonical `UVIX::<base64>::END` formatting with deterministic sorted-key SHA-256 payload integrity hashing (`payload_hash`).
 - **Solana On-Chain Decoders**:
   - **Versioned Transactions (v0 & Legacy)**: Wire-level deserialization, Address Lookup Table (ALT) address resolution, instruction permission mapping (signer/writable), and ComputeBudget priority fee extraction.
   - **Address Lookup Table (ALT) Accounts**: Decoding `AddressLookupTab1e1111111111111111111111111` binary accounts, extracting authorities, and indexing dynamically resolved addresses.
@@ -20,198 +61,118 @@ Enables deterministic, zero-trust telemetry streaming and cross-agent execution 
   - **Raydium V4 AMM Pools** (`675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8`): Constant-product pool reserves, depth calculations, price updates, and swap simulations (`simulate_swap`).
   - **SPL Token & Token-2022**: Base 82-byte mint and 165-byte account layout decoding, TLV extension support (`TransferFeeConfig`, `TransferFeeAmount`, `InterestBearingConfig`, `TokenMetadata`, `MetadataPointer`), and epoch-based fee math.
 - **Edge-Ready Cloudflare Worker**: Built-in edge handler (`uvix.leaksnipe.win/uvix`) that verifies payload integrity hashes in V8 and streams telemetry into Cloudflare D1 (`wecrypto`, `scalper`).
-- **Multi-Agent Coordination & Mesh Handoffs**: Standardized payloads for inter-agent context handoffs across Tailscale mesh nodes (`maurotufgamingp`, `glap_wsl`, `mariphone`).
-- **Polyglot Verification**: Dual Python 3.10+ and Node.js/TypeScript implementations ensuring strict 1:1 cross-language deterministic JSON sorting and SHA-256 validation.
+- **Multi-Agent Coordination & Mesh Handoffs**: Standardized payloads for inter-agent context handoffs across Tailscale mesh nodes.
 
 ---
 
-## 📐 Architecture & Flow
+## 3. Architecture & Data Flow
 
 ```mermaid
-flowchart LR
-    A["Solana Mainnet-Beta<br/>RPC / WebSockets"] -->|Account Data| B["sol_uvix Client"]
-    C["Pump.fun / Raydium<br/>On-Chain Events"] -->|Binary State| D["PumpFunDecoder / RaydiumDecoder"]
-    
-    B --> E["Canonical Hash & Frame<br/>UVIX::<base64>::END"]
-    D --> E
-    
-    E -->|HTTPS POST| F["Cloudflare Edge Worker<br/>uvix.leaksnipe.win"]
-    F -->|Verify SHA-256| G{"Integrity Check"}
-    G -->|Valid| H[("Cloudflare D1<br/>wecrypto / scalper")]
-    G -->|Valid| I["Tailscale Mesh<br/>MauroTUF & Glap-WSL"]
-    G -->|Valid| J["Discord Bot<br/>LeakSnipe #3936"]
+flowchart TD
+    subgraph Ingestion ["Solana Blockchain Layer"]
+        A["Solana Mainnet/Devnet<br/>RPC & WebSockets"] -->|Account Data & Blocks| B["sol_uvix Decoders"]
+        P["Pump.fun & Raydium Pools"] -->|Bonding Curves| B
+        WC["WeCrypto Program (9HLcT...)"] -->|On-Chain Turns & Signals| B
+    end
+
+    subgraph Security ["Cryptographic & Verification Core"]
+        B --> E["UVIX-RI-1.0 Canonical Framing<br/>SHA-256 Payload Hash"]
+        PQC["PQC Suite (Kyber / Dilithium)"] -->|Lattice Signatures| E
+    end
+
+    subgraph Hardware ["Heterogeneous Accelerator Split"]
+        E -->|NLP / Text Tokens| NPU["AMD XDNA 2 NPU (50 TOPS)<br/>DirectML Offload"]
+        E -->|Video Transcode / NVENC| GPU["NVIDIA RTX 4070 Laptop GPU<br/>CUDA / NVDEC / Raster"]
+    end
+
+    subgraph Dispatch ["Mesh & Storage"]
+        E -->|HTTPS POST| F["Cloudflare Worker<br/>uvix.leaksnipe.win/uvix"]
+        F --> D1[("Cloudflare D1<br/>wecrypto / scalper")]
+        E --> MESH["Multi-Agent Mesh<br/>Tailscale Nodes"]
+        E --> DISCORD["Discord Bot #3936"]
+    end
 ```
 
 ---
 
-## 📦 Installation
+## 4. Directory Structure
 
-### Python
+```
+UVIX-SOL/
+├── idl/
+│   └── wecrypto.json           # Canonical Anchor IDL with metadata origin
+├── solana/
+│   └── wecrypto/               # Complete Anchor Rust program suite
+│       ├── programs/wecrypto/  # Program source (instructions, state, error, constants)
+│       ├── tests/              # LiteSVM automated unit/integration tests
+│       ├── Anchor.toml         # Anchor configuration pointing to 9HLcTyxq...
+│       └── Cargo.toml          # Workspace manifest
+├── sol_uvix/                   # Core Python Protocol SDK & Hardware Engines
+│   ├── codec.py                # UVIX-RI-1.0 canonical framing & SHA-256 hashing
+│   ├── transactions.py         # VersionedTx (v0), Legacy, ALTs, ComputeBudget
+│   ├── tokens.py               # SPL Token & Token-2022 TLV extension unpacking
+│   ├── pumpfun.py              # Pump.fun bonding curve decoder & math
+│   ├── raydium.py              # Raydium V4 AMM pool decoder & swap math
+│   ├── ws_client.py            # PubSub WebSocket client
+│   ├── bridge.py               # Cloudflare Edge bridge client
+│   ├── npu_engine.py           # DirectML AMD XDNA 2 NPU text offload engine
+│   ├── gpu_pipeline.py         # NVIDIA RTX 4070 NVENC/CUDA raster pipeline
+│   └── hardware_orchestrator.py # Dynamic workload dispatcher
+├── edge/
+│   └── worker.ts               # Cloudflare Worker edge router & D1 binding
+├── scripts/
+│   └── setup_npu_gpu_split.ps1 # Hardware split configuration script
+├── tests/                      # Automated test suite (30 pytest tests)
+├── .cursor/
+│   ├── rules/solana-mcp.mdc    # Cursor project rule for Solana Developer MCP
+│   └── mcp.json                # Project-level MCP config (mcp.solana.com)
+├── pqc.py                      # Post-quantum cryptographic algorithms (Kyber/Dilithium)
+├── pqc_api.py                  # PQC REST API & verification routes
+├── pqc_files.py                # Encrypted key storage and payload packaging
+├── ai_processor.py             # Neural strategy & feature generation
+├── ai_router.py                # Model inference routing & fallback
+├── dossier_manager.py          # Opponent intelligence and state profiling
+├── equity_sim.py               # Monte Carlo game tree simulation
+├── nash_train.py               # CFR+ Nash equilibrium solver
+├── poker_engine.py             # Real-time state evaluation engine
+└── server.py                   # Local orchestration daemon
+```
+
+---
+
+## 5. Hardware Workload Split (NPU + GPU)
+
+| Subsystem | Target Processor | Hardware Specs & Driver | Assigned Workload | Protocol Slug Layer |
+| :--- | :--- | :--- | :--- | :--- |
+| **Text Off-Ramping** | **AMD Ryzen AI 9 HX 370 (NPU)** | AMD XDNA 2 NPU (50 TOPS)<br>`IpuMcdmDriver` (MCDDM) | Text parsing, LLM token generation, state embeddings | `npu-text-v1` (`UVIX-RI-1.0`) |
+| **Video Transcoding** | **NVIDIA RTX 4070 Laptop GPU** | 8 GB GDDR6 VRAM<br>NVENC / NVDEC (`616.92`) | Hardware HEVC/H.264 video encode/decode streams | `gpu-video-raster-v1` (`UVIX-RI-1.0`) |
+| **Raster Rendering** | **NVIDIA RTX 4070 Laptop GPU** | Ada Lovelace CUDA Cores<br>Direct3D12 / Vulkan / CUDA | High-throughput primitive rasterization & graphics | `gpu-video-raster-v1` (`UVIX-RI-1.0`) |
+
+---
+
+## 6. Development & Testing
+
+### Solana Program Build & LiteSVM Tests
 ```bash
-git clone https://github.com/johndawalka/SOL-UVIX.git
-cd SOL-UVIX
-pip install -e .
+cd solana/wecrypto
+anchor build
+cargo test --package wecrypto
 ```
 
-### Node.js / Edge Worker
+### Python Protocol & Hardware Test Suite
 ```bash
-npm install
-npm test
+py -3.13 -m pytest -v
 ```
 
 ---
 
-## 🚀 Quickstart
+## 7. Repositories & Synchronized Remotes
 
-### 1. Encode a Solana State into a UVIX Slug
-
-```python
-from sol_uvix import encode_uvix_slug
-
-payload = {
-    "mint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
-    "symbol": "BONK",
-    "sol_price": 0.000000021,
-    "slot": 284910283
-}
-
-# Generates canonical UVIX::<base64>::END envelope with SHA-256 integrity hash
-envelope = encode_uvix_slug(
-    payload,
-    source_platform="Solana-Mainnet",
-    target_platform="UVIX-Mesh-MultiAgent"
-)
-
-print(envelope)
-# Output: UVIX::eyJjb21wYXRpYmlsaXR5X2xheWVyIjoic29sYW5hLXV2aXgtdjEiLC...::END
-```
-
-### 2. Decode and Verify Slug Integrity
-
-```python
-from sol_uvix import decode_uvix_slug, UVIXIntegrityError
-
-try:
-    slug = decode_uvix_slug(envelope, verify_integrity=True)
-    print("Source:", slug.source_platform)
-    print("Payload Hash:", slug.payload_hash)
-    print("Data:", slug.raw_payload)
-except UVIXIntegrityError as e:
-    print("Tampered envelope detected!", e)
-```
-
-### 3. Pump.fun Bonding Curve Decoding
-
-```python
-from sol_uvix import PumpFunDecoder
-
-# Decode raw account bytes directly from getAccountInfo RPC
-curve_state = PumpFunDecoder.decode_account_data(
-    raw_account_bytes,
-    mint="6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
-)
-
-print(f"Price: {curve_state.price_in_sol:.9f} SOL")
-print(f"Progress to Raydium: {curve_state.progress_percent}%")
-
-# Wrap directly to UVIX slug for multi-agent dispatch
-slug = PumpFunDecoder.to_uvix_slug(curve_state)
-
-# Simulate a 1 SOL buy
-simulation = PumpFunDecoder.simulate_buy(curve_state, sol_amount_lamports=1_000_000_000)
-print(f"Tokens Out: {simulation['tokens_out']}")
-print(f"Price Impact: {simulation['price_impact_pct']}%")
-```
-
-### 4. VersionedTransaction (v0) & Address Lookup Table Parsing
-
-```python
-from sol_uvix import VersionedTransaction, AddressLookupTableAccount
-
-# Deserialize wire-format transaction (Base64 or raw bytes)
-tx = VersionedTransaction.from_base64(raw_base64_tx)
-
-# Resolve addresses dynamically against Address Lookup Tables
-resolved_keys = tx.resolve_addresses(lookup_tables={
-    "AddressLookupTablePubkey...": ["Address0...", "Address1..."]
-})
-
-# Extract ComputeBudget priority fees & limits
-cb = tx.extract_compute_budget()
-print(f"Compute Limit: {cb.unit_limit} CUs")
-print(f"Priority Fee: {cb.priority_fee_lamports} lamports ({cb.priority_fee_sol:.6f} SOL)")
-
-# Wrap directly to canonical UVIX envelope
-slug = tx.to_uvix_slug()
-```
-
-### 5. SPL Token-2022 Transfer Fees & Mint Extensions
-
-```python
-from sol_uvix import SPLTokenDecoder
-
-# Parse binary mint account with Token-2022 TLV extensions
-mint = SPLTokenDecoder.decode_mint_data(raw_mint_bytes)
-
-if mint.is_token_2022 and mint.transfer_fee_config:
-    fee = mint.calculate_transfer_fee(amount=100_000, current_epoch=250)
-    print(f"Transfer fee: {fee} token units")
-
-# Wrap state into canonical UVIX envelope
-slug = mint.to_uvix_slug()
-```
-
----
-
-## 🌐 CLI Usage
-
-```bash
-# Query an on-chain account and output its canonical UVIX slug
-sol-uvix account DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263
-
-# Decode an envelope from stdin
-sol-uvix decode "UVIX::...::END"
-
-# Parse a Versioned Transaction and print its UVIX slug
-sol-uvix tx "AQAAAA..."
-
-# Decode a Token-2022 mint account buffer
-sol-uvix token "AQAAAA..." --type mint
-
-# Query local Solana CLI configuration & cluster status
-sol-uvix config
-sol-uvix status
-sol-uvix balance
-```
-
----
-
-## 🛡️ Protocol Specification (`UVIX-RI-1.0`)
-
-An envelope is framed as:
-```text
-UVIX::<BASE64(CanonicalJSON(UVIXSlug))>::END
-```
-
-The canonical JSON object contains:
-| Field | Type | Description |
-|---|---|---|
-| `protocol_version` | `string` | Version identifier (e.g. `"1.0"`) |
-| `source_platform` | `string` | Originating subsystem (e.g. `"Solana-Stack"`) |
-| `target_platform` | `string` | Destination service (e.g. `"UVIX-Mesh-MultiAgent"`) |
-| `payload_hash` | `string` | SHA-256 hexadecimal hash of deterministic canonical JSON of `raw_payload` |
-| `compatibility_layer`| `string` | Target protocol binding (e.g. `"solana-uvix-v1"`) |
-| `raw_payload` | `object` | Arbitrary JSON payload data |
-
----
-
-## 🤝 Repositories & Sync
-
-- **GitHub**: [`https://github.com/johndawalka/SOL-UVIX`](https://github.com/johndawalka/SOL-UVIX)
+- **GitHub**: [`https://github.com/JohnDaWalka/UVIX-SOL`](https://github.com/JohnDaWalka/UVIX-SOL)
 - **GitLab**: [`https://gitlab.com/maurofanellijr/SOL-UVIX`](https://gitlab.com/maurofanellijr/SOL-UVIX)
 
 ---
 
-## 📜 License
+## 8. License
 
-MIT © [Mauro Fanelli](mailto:maurofanellijr@gmail.com) & [JohnDaWalka](https://github.com/johndawalka).
+MIT © [JohnDaWalka](https://github.com/johndawalka) & [Mauro Fanelli](mailto:maurofanellijr@gmail.com).

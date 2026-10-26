@@ -1,9 +1,19 @@
+# PQC Security - NEVER commit private keys!
+*.key
+!*.pub.json
+security/config.yaml
+!security/config.template.yaml
+!security/*.pqc
+
+# Local Env and Keys
+env.yaml
+.env.yaml
+.env
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
 
 # Distribution / packaging
@@ -59,3 +69,14 @@ yarn-error.log*
 *.sqlite3
 *.db
 local_cache/
+
+# Local Data and Vector Store
+ai_outputs/
+dossiers/
+vector_store/vectors.json
+vector_store/metadata.json
+
+# Rust & Anchor Build Artifacts
+target/
+solana/wecrypto/target/
+solana/wecrypto/.anchor/
