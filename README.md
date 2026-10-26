@@ -14,9 +14,11 @@ Enables deterministic, zero-trust telemetry streaming and cross-agent execution 
 
 - **UVIX-RI-1.0 Envelope Framing**: Canonical `UVIX::<base64>::END` formatting with deterministic SHA-256 payload integrity hashing (`payload_hash`).
 - **Solana On-Chain Decoders**:
-  - **Pump.fun Bonding Curves** (`6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P`): Binary account decoding, virtual reserve ratios, SOL pricing, and migration progress tracking.
-  - **Raydium V4 AMM Pools** (`675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8`): Constant-product pool reserves, depth calculations, and price updates.
-  - **SPL Token & Token-2022**: Balance extraction, ownership tracking, and mint telemetry.
+  - **Versioned Transactions (v0 & Legacy)**: Wire-level deserialization, Address Lookup Table (ALT) address resolution, instruction permission mapping (signer/writable), and ComputeBudget priority fee extraction.
+  - **Address Lookup Table (ALT) Accounts**: Decoding `AddressLookupTab1e1111111111111111111111111` binary accounts, extracting authorities, and indexing dynamically resolved addresses.
+  - **Pump.fun Bonding Curves** (`6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P`): Binary account decoding, virtual reserve ratios, SOL pricing, migration tracking, and constant-product swap simulations (`simulate_buy`, `simulate_sell`).
+  - **Raydium V4 AMM Pools** (`675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8`): Constant-product pool reserves, depth calculations, price updates, and swap simulations (`simulate_swap`).
+  - **SPL Token & Token-2022**: Base 82-byte mint and 165-byte account layout decoding, TLV extension support (`TransferFeeConfig`, `TransferFeeAmount`, `InterestBearingConfig`, `TokenMetadata`, `MetadataPointer`), and epoch-based fee math.
 - **Edge-Ready Cloudflare Worker**: Built-in edge handler (`uvix.leaksnipe.win/uvix`) that verifies payload integrity hashes in V8 and streams telemetry into Cloudflare D1 (`wecrypto`, `scalper`).
 - **Multi-Agent Coordination & Mesh Handoffs**: Standardized payloads for inter-agent context handoffs across Tailscale mesh nodes (`maurotufgamingp`, `glap_wsl`, `mariphone`).
 - **Polyglot Verification**: Dual Python 3.10+ and Node.js/TypeScript implementations ensuring strict 1:1 cross-language deterministic JSON sorting and SHA-256 validation.
@@ -114,6 +116,49 @@ print(f"Progress to Raydium: {curve_state.progress_percent}%")
 
 # Wrap directly to UVIX slug for multi-agent dispatch
 slug = PumpFunDecoder.to_uvix_slug(curve_state)
+
+# Simulate a 1 SOL buy
+simulation = PumpFunDecoder.simulate_buy(curve_state, sol_amount_lamports=1_000_000_000)
+print(f"Tokens Out: {simulation['tokens_out']}")
+print(f"Price Impact: {simulation['price_impact_pct']}%")
+```
+
+### 4. VersionedTransaction (v0) & Address Lookup Table Parsing
+
+```python
+from sol_uvix import VersionedTransaction, AddressLookupTableAccount
+
+# Deserialize wire-format transaction (Base64 or raw bytes)
+tx = VersionedTransaction.from_base64(raw_base64_tx)
+
+# Resolve addresses dynamically against Address Lookup Tables
+resolved_keys = tx.resolve_addresses(lookup_tables={
+    "AddressLookupTablePubkey...": ["Address0...", "Address1..."]
+})
+
+# Extract ComputeBudget priority fees & limits
+cb = tx.extract_compute_budget()
+print(f"Compute Limit: {cb.unit_limit} CUs")
+print(f"Priority Fee: {cb.priority_fee_lamports} lamports ({cb.priority_fee_sol:.6f} SOL)")
+
+# Wrap directly to canonical UVIX envelope
+slug = tx.to_uvix_slug()
+```
+
+### 5. SPL Token-2022 Transfer Fees & Mint Extensions
+
+```python
+from sol_uvix import SPLTokenDecoder
+
+# Parse binary mint account with Token-2022 TLV extensions
+mint = SPLTokenDecoder.decode_mint_data(raw_mint_bytes)
+
+if mint.is_token_2022 and mint.transfer_fee_config:
+    fee = mint.calculate_transfer_fee(amount=100_000, current_epoch=250)
+    print(f"Transfer fee: {fee} token units")
+
+# Wrap state into canonical UVIX envelope
+slug = mint.to_uvix_slug()
 ```
 
 ---
@@ -127,8 +172,16 @@ sol-uvix account DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263
 # Decode an envelope from stdin
 sol-uvix decode "UVIX::...::END"
 
-# Encode raw JSON file
-sol-uvix encode data.json --source Solana-Feeder --target MultiAgent-Mesh
+# Parse a Versioned Transaction and print its UVIX slug
+sol-uvix tx "AQAAAA..."
+
+# Decode a Token-2022 mint account buffer
+sol-uvix token "AQAAAA..." --type mint
+
+# Query local Solana CLI configuration & cluster status
+sol-uvix config
+sol-uvix status
+sol-uvix balance
 ```
 
 ---
