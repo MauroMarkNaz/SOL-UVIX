@@ -1,16 +1,17 @@
 """
 UVIX Edge Bridge & Multi-Agent Dispatcher
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Dispatches UVIX slugs across Cloudflare Edge routers (uvix.leaksnipe.win),
-Tailscale zero-trust mesh nodes, Discord bot LeakSnipe, and cross-agent event loops.
+Dispatches UVIX slugs across Cloudflare Edge routers,
+zero-trust neural mesh nodes, and cross-agent telemetry event loops.
 """
 
+import os
 import requests
 from typing import Dict, Any, Optional, Union
 from .codec import encode_uvix_slug, decode_uvix_slug, UVIXSlug
 from .models import AgentHandoffPayload
 
-DEFAULT_GATEWAY_URL = "https://uvix.leaksnipe.win/uvix"
+DEFAULT_GATEWAY_URL = os.environ.get("UVIX_GATEWAY_URL", "https://edge.uvix-sol.network/uvix")
 
 
 class UVIXEdgeBridge:
@@ -80,10 +81,10 @@ class UVIXEdgeBridge:
         return self.dispatch_slug(envelope, destination_url=destination_url)
 
     @staticmethod
-    def format_leaksnipe_discord_embed(slug_or_envelope: Union[str, UVIXSlug, Dict[str, Any]],
-                                       title: Optional[str] = None) -> Dict[str, Any]:
+    def format_discord_embed(slug_or_envelope: Union[str, UVIXSlug, Dict[str, Any]],
+                             title: Optional[str] = None) -> Dict[str, Any]:
         """
-        Constructs a structured Discord embed payload for LeakSnipe bot integrations.
+        Constructs a structured Discord embed payload for mesh bot integrations.
         """
         if isinstance(slug_or_envelope, str):
             slug = decode_uvix_slug(slug_or_envelope)
@@ -109,19 +110,22 @@ class UVIXEdgeBridge:
                 {"name": "Payload Preview", "value": f"```{raw_preview}```", "inline": False},
             ],
             "footer": {
-                "text": "SOL-UVIX Bridge • LeakSnipe #3936",
+                "text": "SOL-UVIX Bridge • Neural Mesh Telemetry",
             },
         }
         return embed
+
+    # Backward-compatible alias
+    format_leaksnipe_discord_embed = format_discord_embed
 
     def stream_to_discord(self,
                           webhook_url: str,
                           envelope: str,
                           title: Optional[str] = None) -> Dict[str, Any]:
         """
-        Streams a UVIX envelope to a Discord webhook with LeakSnipe formatting.
+        Streams a UVIX envelope to a Discord webhook with formatted telemetry.
         """
-        embed = self.format_leaksnipe_discord_embed(envelope, title=title)
+        embed = self.format_discord_embed(envelope, title=title)
         payload = {
             "content": f"**UVIX Envelope Received:**\n```\n{envelope[:120]}...\n```",
             "embeds": [embed],

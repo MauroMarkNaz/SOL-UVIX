@@ -1,11 +1,12 @@
 /**
- * Cloudflare Edge Worker for SOL-UVIX Protocol (uvix.leaksnipe.win)
+ * Cloudflare Edge Worker for SOL-UVIX Protocol
  * Ingests, validates, verifies payload hashes, and routes Solana UVIX slugs.
  */
 
 export interface Env {
-  WECRYPTO_D1: D1Database;
-  SCALPER_D1: D1Database;
+  UVIX_TELEMETRY_D1?: D1Database;
+  UVIX_STATE_D1?: D1Database;
+  WECRYPTO_D1?: D1Database;
   AUTH_SECRET?: string;
 }
 
@@ -57,10 +58,11 @@ export default {
         }
 
         // Log or buffer to D1 if available
-        if (env.WECRYPTO_D1) {
+        const d1Db = env.UVIX_TELEMETRY_D1 || env.WECRYPTO_D1;
+        if (d1Db) {
           ctx.waitUntil(
-            env.WECRYPTO_D1.prepare(
-              "INSERT OR IGNORE INTO spot_bars_1s (token, price, volume, timestamp) VALUES (?, ?, ?, ?)"
+            d1Db.prepare(
+              "INSERT OR IGNORE INTO telemetry_slugs (token, price, volume, timestamp) VALUES (?, ?, ?, ?)"
             ).bind(
               slug.raw_payload?.mint || "SOL",
               slug.raw_payload?.data?.price_in_sol || 0,

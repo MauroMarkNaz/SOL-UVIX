@@ -1,0 +1,54 @@
+{
+  "tailnet": "your-tailnet.ts.net",
+  "machines": [
+    {
+      "name": "node-primary-gpu-npu",
+      "ip": "100.x.y.1",
+      "os": "windows",
+      "tags": ["agent", "ai", "amd", "core", "mesh", "trading", "uvix"],
+      "hardware": {
+        "cpu": "AMD Ryzen AI 9 HX 370",
+        "npu_tops": 50.0,
+        "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+        "vram_mb": 8188
+      },
+      "connector": true,
+      "latency_ms": 1.0,
+      "load": 0.10
+    },
+    {
+      "name": "node-solana-validator",
+      "ip": "100.x.y.2",
+      "os": "linux",
+      "tags": ["ai", "core", "exit-node", "uvix", "wecrypto", "wsl"],
+      "role": "solana_validator_worker",
+      "exit_node": true,
+      "latency_ms": 1.5,
+      "load": 0.15
+    },
+    {
+      "name": "node-mobile-edge",
+      "ip": "100.x.y.3",
+      "os": "ios",
+      "tags": ["agent", "mesh", "monitoring", "uvix"],
+      "latency_ms": 15.0,
+      "load": 0.05
+    }
+  ],
+  "services": [
+    {
+      "name": "wecrypto-service",
+      "domain": "wecrypto.your-tailnet.ts.net",
+      "origin_host": "node-primary-gpu-npu",
+      "ports": [80, 443, 3010, 3450, 8080],
+      "description": "WeCrypto origin & proxy service"
+    },
+    {
+      "name": "local-llm-service",
+      "domain": "llm.your-tailnet.ts.net",
+      "origin_host": "node-primary-gpu-npu",
+      "ports": [80, 443],
+      "description": "Local LLM inference bridge"
+    }
+  ]
+}

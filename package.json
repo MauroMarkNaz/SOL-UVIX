@@ -1,5 +1,5 @@
 {
-  "name": "@leaksnipe/sol-uvix",
+  "name": "@uvix-sol/core",
   "version": "1.0.0",
   "description": "Solana Stack and UVIX-RI-1.0 Interoperability Protocol Bridge",
   "main": "dist/index.js",
@@ -10,11 +10,10 @@
   "keywords": [
     "solana",
     "uvix",
-    "interoperability",
-    "crypto",
-    "leaksnipe",
+    "neural-mesh",
+    "pqc",
     "cloudflare-workers"
   ],
-  "author": "Mauro Fanelli <maurofanellijr@gmail.com>",
+  "author": "UVIX-SOL Maintainers",
   "license": "MIT"
 }

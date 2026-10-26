@@ -80,3 +80,8 @@ vector_store/metadata.json
 target/
 solana/wecrypto/target/
 solana/wecrypto/.anchor/
+
+# Private Tailnet & Node Configurations
+config/tailnet.json
+config/tailnet.local.json
+!config/tailnet.template.json

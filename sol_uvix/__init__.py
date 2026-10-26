@@ -1,10 +1,8 @@
 """
-SOL-UVIX Protocol Suite
-~~~~~~~~~~~~~~~~~~~~~~~
-Solana Stack and UVIX-RI-1.0 Interoperability Protocol Bridge.
-Enables cross-agent encapsulation of Solana RPC state, bonding curves,
-SPL token balances, versioned transactions, and Address Lookup Tables (ALTs)
-into canonical UVIX slug envelopes.
+SOL-UVIX Protocol Suite & Neural Mesh Facade
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Solana Stack, UVIX-RI-1.0 Interoperability Protocol Bridge, Heterogeneous
+Hardware Offload, and Edge Neural Mesh Routing.
 """
 
 __version__ = "1.0.0"
@@ -62,16 +60,19 @@ from .tokens import (
     TOKEN_2022_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
 )
+from .hardware_orchestrator import HardwareWorkloadOrchestrator
+from .npu_engine import NPUTextEngine
+from .gpu_pipeline import GPUVideoRasterPipeline
+from core.mesh import NeuralMeshRouter, EdgeNetwork, MeshNode, NodeType
 
 __all__ = [
-    # Codec
+    # Codec & Models
     "UVIXSlug",
     "encode_uvix_slug",
     "decode_uvix_slug",
     "compute_canonical_payload_hash",
     "UVIXIntegrityError",
     "UVIXFormatError",
-    # Models
     "SolanaAccountState",
     "SolanaTransactionState",
     "PumpFunBondingCurveState",
@@ -114,4 +115,13 @@ __all__ = [
     "TOKEN_PROGRAM_ID",
     "TOKEN_2022_PROGRAM_ID",
     "ASSOCIATED_TOKEN_PROGRAM_ID",
+    # Hardware Offload
+    "HardwareWorkloadOrchestrator",
+    "NPUTextEngine",
+    "GPUVideoRasterPipeline",
+    # Neural Mesh Topology
+    "NeuralMeshRouter",
+    "EdgeNetwork",
+    "MeshNode",
+    "NodeType",
 ]

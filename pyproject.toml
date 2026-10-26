@@ -3,11 +3,10 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sol-uvix"
+name = "uvix-sol"
 version = "1.0.0"
 authors = [
-  { name="Mauro Fanelli", email="maurofanellijr@gmail.com" },
-  { name="JohnDaWalka", email="johndawalka@leaksnipe.win" }
+  { name="UVIX-SOL Maintainers" }
 ]
 description = "Solana Stack and UVIX-RI-1.0 Interoperability Protocol Bridge"
 readme = "README.md"

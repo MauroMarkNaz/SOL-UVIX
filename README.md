@@ -1,178 +1,196 @@
-# UVIX-SOL: Post-Quantum Cryptography, Solana On-Chain Verification & UVIX-RI-1.0 Mesh
+# UVIX-SOL: Post-Quantum Cryptography, Solana On-Chain Verification & Neural Mesh Edge Network
 
 [![Solana Program](https://img.shields.io/badge/Solana-Anchor%201.2.1-14F195?logo=solana)](https://solana.com)
-[![IDL Registry](https://img.shields.io/badge/IDL-wecrytpo.app.leaksnipe.idl.win-0052FF)](https://wecrytpo.app.leaksnipe.idl.win)
-[![PQC Security](https://img.shields.io/badge/Security-Post--Quantum%20(Kyber%2FDilithium)-black)](PQC_SECURITY.md)
-[![Mesh Protocol](https://img.shields.io/badge/Mesh-UVIX--RI--1.0-blueviolet)](https://uvix.leaksnipe.win/uvix)
-[![Hardware Split](https://img.shields.io/badge/Hardware-NPU%20%7C%20RTX%204070-76B900)](#5-hardware-workload-split-npu--gpu)
+[![Protocol](https://img.shields.io/badge/Protocol-UVIX--RI--1.0-blueviolet)](#3-sol-uvix-protocol-suite-uvix-ri-10)
+[![PQC Security](https://img.shields.io/badge/Security-Post--Quantum%20(ML--KEM%2FDSA)-black)](#4-post-quantum-cryptography-corecrypto)
+[![Neural Mesh](https://img.shields.io/badge/Mesh-Neural%20Edge%20Overlay-blue)](#2-neural-mesh-topology-within-an-edge-network-coremesh)
+[![Hardware Split](https://img.shields.io/badge/Hardware-NPU%20(50%20TOPS)%20%7C%20RTX%204070-76B900)](#5-heterogeneous-hardware-workload-split-corehardware)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-UVIX-SOL provides the unified Solana on-chain anchoring layer, post-quantum cryptographic (PQC) validation pipeline, and zero-trust multi-agent telemetry protocol for the **LeakSnipe / WeCrypto** estate. It combines on-chain Proof-of-History state commits, calibrated predictive market settlement with Brier scoring, token forensic verification, lattice-based cryptographic signing, and heterogeneous hardware offloading.
+UVIX-SOL is a high-performance modular protocol suite combining **Solana on-chain state verification**, **lattice-based post-quantum cryptography (PQC)**, **a dynamic neural mesh topology across edge networks**, and **heterogeneous hardware acceleration (AMD XDNA 2 NPU + NVIDIA RTX discrete GPU)**.
 
 ---
 
-## 1. Solana On-Chain Program: `WeCrypto`
+## 1. Modular Architecture Overview
 
-* **Program ID**: `9HLcTyxqXTimBXj9RvP2dZtTwZsNdzdiGRNRdUTTUp5B`
-* **Canonical IDL**: [`idl/wecrypto.json`](idl/wecrypto.json) and [`solana/wecrypto/app/idl/wecrypto.json`](solana/wecrypto/app/idl/wecrypto.json)
-* **Hosted IDL URI**: `https://wecrytpo.app.leaksnipe.idl.win/idl/wecrypto.json`
-* **Framework**: Anchor `1.2.1` / Agave SDK `v3.1+` / Rust `1.89+`
-
-### Instructions
-
-| Instruction | Accounts & Discriminator | Purpose |
-| :--- | :--- | :--- |
-| `initialize` | `[payer, config, system_program]` | Initializes the singleton `GlobalConfig` PDA with admin authority and canonical IDL endpoint. |
-| `record_turn_proof` | `[payer, config, turn_anchor, system_program]` | Commits a strictly monotonic state turn hash (`[u8; 32]`) anchored to Cloudflare D1 proof turns and Solana slot height. |
-| `commit_prediction` | `[payer, config, commitment, system_program]` | Cryptographically commits market probability forecasts (touch/settle basis points) before expiration horizons. |
-| `resolve_prediction` | `[authority, config, commitment]` | Records realized market settlement outcomes, settlement price, and quadratic Brier score loss. |
-| `log_token_signal` | `[payer, config, signal_record, system_program]` | Stores on-chain forensic assessment (risk score, LP burn/lock status, bundle cluster detection, metadata hash). |
-| `update_config` | `[authority, config]` | Administrative pause controls, authority migration, and IDL URI updates. |
-
-### Program Derived Addresses (PDAs)
-
-```rust
-// Global configuration singleton
-[b"global_config"]
-
-// Proof-of-History turn state commits
-[b"poh_turn", sequence.to_le_bytes().as_ref()]
-
-// Horizon prediction commitments
-[b"prediction", sequence.to_le_bytes().as_ref()]
-
-// Token security & rugcheck forensics
-[b"token_signal", token_mint.as_ref()]
-```
-
----
-
-## 2. SOL-UVIX Interoperability Protocol Suite (`UVIX-RI-1.0`)
-
-Enables deterministic, zero-trust telemetry streaming and cross-agent execution across **Solana RPCs**, **Pump.fun bonding curves**, **Raydium AMMs**, **Cloudflare Workers**, **Discord bots**, and real-time **Parallel CFR game-theoretic solvers**.
-
-### Key Modules (`sol_uvix/`)
-
-- **UVIX-RI-1.0 Envelope Framing**: Canonical `UVIX::<base64>::END` formatting with deterministic sorted-key SHA-256 payload integrity hashing (`payload_hash`).
-- **Solana On-Chain Decoders**:
-  - **Versioned Transactions (v0 & Legacy)**: Wire-level deserialization, Address Lookup Table (ALT) address resolution, instruction permission mapping (signer/writable), and ComputeBudget priority fee extraction.
-  - **Address Lookup Table (ALT) Accounts**: Decoding `AddressLookupTab1e1111111111111111111111111` binary accounts, extracting authorities, and indexing dynamically resolved addresses.
-  - **Pump.fun Bonding Curves** (`6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P`): Binary account decoding, virtual reserve ratios, SOL pricing, migration tracking, and constant-product swap simulations (`simulate_buy`, `simulate_sell`).
-  - **Raydium V4 AMM Pools** (`675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8`): Constant-product pool reserves, depth calculations, price updates, and swap simulations (`simulate_swap`).
-  - **SPL Token & Token-2022**: Base 82-byte mint and 165-byte account layout decoding, TLV extension support (`TransferFeeConfig`, `TransferFeeAmount`, `InterestBearingConfig`, `TokenMetadata`, `MetadataPointer`), and epoch-based fee math.
-- **Edge-Ready Cloudflare Worker**: Built-in edge handler (`uvix.leaksnipe.win/uvix`) that verifies payload integrity hashes in V8 and streams telemetry into Cloudflare D1 (`wecrypto`, `scalper`).
-- **Multi-Agent Coordination & Mesh Handoffs**: Standardized payloads for inter-agent context handoffs across Tailscale mesh nodes.
-
----
-
-## 3. Architecture & Data Flow
-
-```mermaid
-flowchart TD
-    subgraph Ingestion ["Solana Blockchain Layer"]
-        A["Solana Mainnet/Devnet<br/>RPC & WebSockets"] -->|Account Data & Blocks| B["sol_uvix Decoders"]
-        P["Pump.fun & Raydium Pools"] -->|Bonding Curves| B
-        WC["WeCrypto Program (9HLcT...)"] -->|On-Chain Turns & Signals| B
-    end
-
-    subgraph Security ["Cryptographic & Verification Core"]
-        B --> E["UVIX-RI-1.0 Canonical Framing<br/>SHA-256 Payload Hash"]
-        PQC["PQC Suite (Kyber / Dilithium)"] -->|Lattice Signatures| E
-    end
-
-    subgraph Hardware ["Heterogeneous Accelerator Split"]
-        E -->|NLP / Text Tokens| NPU["AMD XDNA 2 NPU (50 TOPS)<br/>DirectML Offload"]
-        E -->|Video Transcode / NVENC| GPU["NVIDIA RTX 4070 Laptop GPU<br/>CUDA / NVDEC / Raster"]
-    end
-
-    subgraph Dispatch ["Mesh & Storage"]
-        E -->|HTTPS POST| F["Cloudflare Worker<br/>uvix.leaksnipe.win/uvix"]
-        F --> D1[("Cloudflare D1<br/>wecrypto / scalper")]
-        E --> MESH["Multi-Agent Mesh<br/>Tailscale Nodes"]
-        E --> DISCORD["Discord Bot #3936"]
-    end
-```
-
----
-
-## 4. Directory Structure
+The repository is organized into cleanly decoupled, nested subsystems under `core/`:
 
 ```
 UVIX-SOL/
-├── idl/
-│   └── wecrypto.json           # Canonical Anchor IDL with metadata origin
-├── solana/
+├── core/
+│   ├── mesh/                   # Neural Mesh Topology & Edge Network Routing
+│   │   ├── node.py             # MeshNode, NodeType, Capacity & Telemetry models
+│   │   ├── topology.py         # Dynamic routing graph & neural loss weight matrix
+│   │   ├── edge_network.py     # Edge overlay manager & Tailscale peer discovery
+│   │   └── router.py           # UVIX-RI-1.0 packet dispatcher & pathfinder
+│   ├── crypto/                 # Post-Quantum & Hybrid Cryptography
+│   │   ├── pqc.py              # ML-KEM (Kyber) & ML-DSA (Dilithium) + X25519 fallback
+│   │   ├── pqc_api.py          # Cryptographic REST API endpoints
+│   │   └── pqc_files.py        # Authenticated key storage & sealed envelopes
+│   ├── intelligence/           # Neural Strategy & Game-Theoretic Solvers
+│   │   ├── processor.py        # AI reasoning & heuristic synthesis
+│   │   ├── router.py           # Multi-provider LLM routing (local & external)
+│   │   ├── dossier.py          # Opponent intelligence & historical profiling
+│   │   ├── equity.py           # Monte Carlo equity simulation
+│   │   ├── nash.py             # CFR+ Nash equilibrium solver
+│   │   ├── engine.py           # State evaluation engine
+│   │   ├── server.py           # API server daemon
+│   │   └── vector_store/       # FAISS vector store & embeddings
+│   ├── hardware/               # Heterogeneous Workload Split
+│   │   ├── orchestrator.py     # HardwareWorkloadOrchestrator
+│   │   ├── npu_engine.py       # AMD XDNA 2 NPU DirectML text offload
+│   │   └── gpu_pipeline.py     # NVIDIA RTX 4070 NVENC/NVDEC & CUDA raster pipeline
+│   └── protocol/               # Solana Wire & UVIX-RI-1.0 Protocol Envelopes
+│       ├── codec.py            # Canonical JSON & SHA-256 payload integrity hashing
+│       ├── transactions.py     # VersionedTx (v0), ALTs, ComputeBudget fees
+│       ├── tokens.py           # SPL Token & Token-2022 TLV extension decoders
+│       ├── pumpfun.py          # Pump.fun bonding curves & simulation math
+│       ├── raydium.py          # Raydium V4 AMM pools & simulation math
+│       ├── ws_client.py        # PubSub WebSocket client
+│       ├── bridge.py           # Edge worker client & webhook dispatch
+│       ├── cli_wrapper.py      # Agave/Solana CLI wrapper
+│       └── client.py           # Solana RPC client
+├── sol_uvix/                   # Facade & backward-compatibility package
+├── edge/                       # Edge Network Runtime
+│   ├── worker.ts               # Cloudflare Worker edge router & D1 telemetry sink
+│   └── wrangler.toml           # Cloudflare Wrangler configuration template
+├── solana/                     # Solana On-Chain Programs
 │   └── wecrypto/               # Complete Anchor Rust program suite
-│       ├── programs/wecrypto/  # Program source (instructions, state, error, constants)
-│       ├── tests/              # LiteSVM automated unit/integration tests
-│       ├── Anchor.toml         # Anchor configuration pointing to 9HLcTyxq...
-│       └── Cargo.toml          # Workspace manifest
-├── sol_uvix/                   # Core Python Protocol SDK & Hardware Engines
-│   ├── codec.py                # UVIX-RI-1.0 canonical framing & SHA-256 hashing
-│   ├── transactions.py         # VersionedTx (v0), Legacy, ALTs, ComputeBudget
-│   ├── tokens.py               # SPL Token & Token-2022 TLV extension unpacking
-│   ├── pumpfun.py              # Pump.fun bonding curve decoder & math
-│   ├── raydium.py              # Raydium V4 AMM pool decoder & swap math
-│   ├── ws_client.py            # PubSub WebSocket client
-│   ├── bridge.py               # Cloudflare Edge bridge client
-│   ├── npu_engine.py           # DirectML AMD XDNA 2 NPU text offload engine
-│   ├── gpu_pipeline.py         # NVIDIA RTX 4070 NVENC/CUDA raster pipeline
-│   └── hardware_orchestrator.py # Dynamic workload dispatcher
-├── edge/
-│   └── worker.ts               # Cloudflare Worker edge router & D1 binding
-├── scripts/
-│   └── setup_npu_gpu_split.ps1 # Hardware split configuration script
-├── tests/                      # Automated test suite (30 pytest tests)
-├── .cursor/
-│   ├── rules/solana-mcp.mdc    # Cursor project rule for Solana Developer MCP
-│   └── mcp.json                # Project-level MCP config (mcp.solana.com)
-├── pqc.py                      # Post-quantum cryptographic algorithms (Kyber/Dilithium)
-├── pqc_api.py                  # PQC REST API & verification routes
-├── pqc_files.py                # Encrypted key storage and payload packaging
-├── ai_processor.py             # Neural strategy & feature generation
-├── ai_router.py                # Model inference routing & fallback
-├── dossier_manager.py          # Opponent intelligence and state profiling
-├── equity_sim.py               # Monte Carlo game tree simulation
-├── nash_train.py               # CFR+ Nash equilibrium solver
-├── poker_engine.py             # Real-time state evaluation engine
-└── server.py                   # Local orchestration daemon
+├── idl/                        # Program IDLs (canonical schemas)
+├── config/                     # Topology schemas & configuration templates
+│   ├── models.json             # AI routing model definitions
+│   └── tailnet.template.json   # Sanitized Tailscale mesh configuration template
+├── scripts/                    # Hardware split & automation setup scripts
+└── tests/                      # Automated test suite (Pytest + Node.js)
 ```
 
 ---
 
-## 5. Hardware Workload Split (NPU + GPU)
+## 2. Neural Mesh Topology within an Edge Network (`core/mesh`)
 
-| Subsystem | Target Processor | Hardware Specs & Driver | Assigned Workload | Protocol Slug Layer |
-| :--- | :--- | :--- | :--- | :--- |
-| **Text Off-Ramping** | **AMD Ryzen AI 9 HX 370 (NPU)** | AMD XDNA 2 NPU (50 TOPS)<br>`IpuMcdmDriver` (MCDDM) | Text parsing, LLM token generation, state embeddings | `npu-text-v1` (`UVIX-RI-1.0`) |
-| **Video Transcoding** | **NVIDIA RTX 4070 Laptop GPU** | 8 GB GDDR6 VRAM<br>NVENC / NVDEC (`616.92`) | Hardware HEVC/H.264 video encode/decode streams | `gpu-video-raster-v1` (`UVIX-RI-1.0`) |
-| **Raster Rendering** | **NVIDIA RTX 4070 Laptop GPU** | Ada Lovelace CUDA Cores<br>Direct3D12 / Vulkan / CUDA | High-throughput primitive rasterization & graphics | `gpu-video-raster-v1` (`UVIX-RI-1.0`) |
+The mesh system dynamically models an edge network of heterogeneous nodes (Cloudflare Workers, local NPU/GPU machines, and private Tailscale nodes):
+
+```mermaid
+flowchart TD
+    subgraph EdgeOverlay ["Edge Network & Private Mesh Overlay"]
+        EW["Edge Router Node<br/>(Cloudflare Worker / V8)"]
+        TS["Tailnet Private Overlay<br/>(Zero-Trust P2P Mesh)"]
+        EW <--> TS
+    end
+
+    subgraph NeuralMatrix ["Dynamic Neural Routing Loss Matrix"]
+        EW -->|Weight Loss Matrix| NPU["Local NPU Node<br/>AMD XDNA 2 (50 TOPS)"]
+        EW -->|Weight Loss Matrix| GPU["Local GPU Node<br/>NVIDIA RTX 4070"]
+        EW -->|Weight Loss Matrix| CFR["Neural Solver Node<br/>CFR+ / Nash Solvers"]
+        EW -->|Weight Loss Matrix| PQC["PQC Signer Node<br/>ML-KEM / ML-DSA"]
+        EW -->|Weight Loss Matrix| SOL["Solana RPC Node<br/>Agave Validator"]
+    end
+
+    subgraph Envelopes ["Canonical Slugs"]
+        NPU --> SLUG["UVIX-RI-1.0 Envelope<br/>UVIX::base64::END"]
+        GPU --> SLUG
+        CFR --> SLUG
+        PQC --> SLUG
+        SOL --> SLUG
+    end
+```
+
+### Dynamic Neural Weight Calculation
+Tasks are routed using a multi-factor loss function:
+$$\text{Cost} = w_1 \cdot \ln(1 + \text{Latency}) + w_2 \cdot \frac{1}{1.01 - \text{Load}} + w_3 \cdot \text{AffinityPenalty} + w_4 \cdot \text{ErrorPenalty}$$
+
+- **Text / Token Offload**: High affinity for `NPU_ACCELERATOR`
+- **Video / Raster Render**: High affinity for `GPU_COMPUTE`
+- **Solana Instructions**: High affinity for `SOLANA_VALIDATOR`
+- **State Signatures**: High affinity for `PQC_SIGNER`
+- **Game Theory**: High affinity for `NEURAL_SOLVER`
 
 ---
 
-## 6. Development & Testing
+## 3. SOL-UVIX Protocol Suite (`UVIX-RI-1.0`)
 
-### Solana Program Build & LiteSVM Tests
+All cross-node messages, blockchain states, and hardware results are encapsulated in deterministic **UVIX Slugs**:
+
+$$\text{UVIX}::\text{Base64}\left(\text{CanonicalJSON}\left(\text{Slug}\right)\right)::\text{END}$$
+
+Every slug includes a deterministic sorted-key SHA-256 payload integrity hash (`payload_hash`), enabling zero-trust verification across language runtimes (Python, TypeScript, Rust).
+
+### Solana Decoders:
+- **Versioned Transactions (`v0`)**: Decodes transaction wire formats, Address Lookup Tables (ALTs), signer/writable permissions, and priority fees.
+- **SPL Token-2022**: Decodes TLV extensions including `TransferFeeConfig`, `InterestBearingConfig`, and `TokenMetadata`.
+- **DEX Bonding Curves**: Binary decoders and constant-product swap simulations for Pump.fun and Raydium V4 pools.
+
+---
+
+## 4. Post-Quantum Cryptography (`core/crypto`)
+
+Lattice-based quantum-resistant cryptography implementing:
+- **ML-KEM (Kyber)**: Key encapsulation mechanism for quantum-safe key exchange.
+- **ML-DSA (Dilithium)**: Digital signature algorithm for authenticating state turn proofs.
+- **Classical Fallback**: Hybrid X25519 / Ed25519 mode with AES-256-GCM symmetric payload encryption.
+
+---
+
+## 5. Heterogeneous Hardware Workload Split (`core/hardware`)
+
+| Workload Type | Assigned Hardware | Execution Engine | Protocol Layer |
+| :--- | :--- | :--- | :--- |
+| **NLP & Text Embeddings** | **AMD Ryzen AI 9 HX 370 (NPU)** | AMD XDNA 2 (50 TOPS) via DirectML | `npu-text-v1` |
+| **Video Transcoding** | **NVIDIA RTX 4070 Laptop GPU** | NVENC / NVDEC hardware encoders | `gpu-video-raster-v1` |
+| **Raster Compute & 3D** | **NVIDIA RTX 4070 Laptop GPU** | Ada Lovelace CUDA / Direct3D12 | `gpu-video-raster-v1` |
+
+---
+
+## 6. Solana On-Chain Program: `WeCrypto` (`solana/wecrypto`)
+
+- **Program ID**: `9HLcTyxqXTimBXj9RvP2dZtTwZsNdzdiGRNRdUTTUp5B`
+- **Canonical IDL**: [`idl/wecrypto.json`](idl/wecrypto.json)
+- **Framework**: Anchor `1.2.1` / Agave SDK `v3.1+` / Rust `1.89+`
+
+### Instructions:
+- `initialize`: Singleton `GlobalConfig` initialization with admin authority.
+- `record_turn_proof`: Commits monotonic state hashes anchored to proof turns and slot height.
+- `commit_prediction`: Cryptographically commits market probability forecasts before expiration horizons.
+- `resolve_prediction`: Records realized market outcomes and quadratic Brier score loss.
+- `log_token_signal`: Stores on-chain forensic assessment (risk score, LP burn/lock status, bundle detection).
+- `update_config`: Administrative pause controls and authority migration.
+
+---
+
+## 7. Setup & Configuration
+
+### Prerequisites
+- Python 3.10+ (Python 3.13 recommended)
+- Node.js 20+
+- Rust 1.89+ / Solana CLI / Anchor 1.2.1
+
+### Environment Configuration
+Copy template configurations to initialize your environment:
 ```bash
-cd solana/wecrypto
-anchor build
-cargo test --package wecrypto
+cp config/tailnet.template.json config/tailnet.json
+cp edge/wrangler.toml edge/wrangler.local.toml
 ```
 
-### Python Protocol & Hardware Test Suite
+Set environment variables in `.env`:
+```bash
+SOLANA_RPC_URL="https://api.devnet.solana.com"
+UVIX_GATEWAY_URL="https://edge.yourdomain.com/uvix"
+TAILNET_CONFIG_PATH="config/tailnet.json"
+```
+
+### Running Tests
+Execute the full test suite (34 unit tests):
 ```bash
 py -3.13 -m pytest -v
 ```
 
----
-
-## 7. Repositories & Synchronized Remotes
-
-- **GitHub**: [`https://github.com/JohnDaWalka/UVIX-SOL`](https://github.com/JohnDaWalka/UVIX-SOL)
-- **GitLab**: [`https://gitlab.com/maurofanellijr/SOL-UVIX`](https://gitlab.com/maurofanellijr/SOL-UVIX)
+Execute cross-runtime Node.js verification:
+```bash
+node tests/test_roundtrip.js
+```
 
 ---
 
 ## 8. License
 
-MIT © [JohnDaWalka](https://github.com/johndawalka) & [Mauro Fanelli](mailto:maurofanellijr@gmail.com).
+MIT © [UVIX-SOL Maintainers](https://github.com/JohnDaWalka/UVIX-SOL).

@@ -5,6 +5,7 @@ Queries live Solana RPC clusters and wraps on-chain telemetry into
 canonical UVIX-RI-1.0 envelopes.
 """
 
+import os
 import json
 import requests
 from typing import Dict, Any, Optional, List
@@ -12,9 +13,8 @@ from .models import SolanaAccountState, SolanaTransactionState
 from .codec import encode_uvix_slug
 
 DEFAULT_RPC_ENDPOINTS = [
-    "https://api.mainnet-beta.solana.com",
-    "https://pump.leaksnipe.win",
-    "https://wecrypto.leaksnipe.win/px",
+    os.environ.get("SOLANA_RPC_URL", "https://api.mainnet-beta.solana.com"),
+    os.environ.get("SOLANA_DEVNET_RPC_URL", "https://api.devnet.solana.com"),
 ]
 
 
