@@ -1,0 +1,915 @@
+{
+  "address": "9HLcTyxqXTimBXj9RvP2dZtTwZsNdzdiGRNRdUTTUp5B",
+  "metadata": {
+    "name": "wecrypto",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "WeCrypto Solana On-Chain PoH & Predictor Anchor Program",
+    "address": "9HLcTyxqXTimBXj9RvP2dZtTwZsNdzdiGRNRdUTTUp5B",
+    "origin": "https://wecrytpo.app.leaksnipe.idl.win",
+    "idlUrl": "https://wecrytpo.app.leaksnipe.idl.win/idl/wecrypto.json"
+  },
+  "instructions": [
+    {
+      "name": "commit_prediction",
+      "discriminator": [
+        92,
+        250,
+        182,
+        231,
+        10,
+        22,
+        234,
+        71
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "prediction",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  101,
+                  100,
+                  105,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market_id"
+              },
+              {
+                "kind": "arg",
+                "path": "sequence"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "market_id",
+          "type": "string"
+        },
+        {
+          "name": "sequence",
+          "type": "u64"
+        },
+        {
+          "name": "market_type",
+          "type": "u8"
+        },
+        {
+          "name": "regime",
+          "type": "string"
+        },
+        {
+          "name": "strike_or_band",
+          "type": "i64"
+        },
+        {
+          "name": "touch_prob_bps",
+          "type": "u16"
+        },
+        {
+          "name": "settle_prob_bps",
+          "type": "u16"
+        },
+        {
+          "name": "expiry_at",
+          "type": "i64"
+        },
+        {
+          "name": "spot_at_commit",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "idl_uri",
+          "type": {
+            "option": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log_token_signal",
+      "discriminator": [
+        81,
+        14,
+        142,
+        37,
+        106,
+        172,
+        102,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "signal_record",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  115,
+                  105,
+                  103,
+                  110,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "token_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "token_mint",
+          "type": "pubkey"
+        },
+        {
+          "name": "risk_verdict",
+          "type": "u8"
+        },
+        {
+          "name": "risk_score_bps",
+          "type": "u16"
+        },
+        {
+          "name": "bundle_cluster_detected",
+          "type": "bool"
+        },
+        {
+          "name": "lp_burned_or_locked",
+          "type": "bool"
+        },
+        {
+          "name": "details_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "record_turn_proof",
+      "discriminator": [
+        55,
+        145,
+        103,
+        103,
+        229,
+        121,
+        22,
+        72
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "turn_anchor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  104,
+                  95,
+                  116,
+                  117,
+                  114,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "sequence"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "sequence",
+          "type": "u64"
+        },
+        {
+          "name": "turn_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "prev_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        },
+        {
+          "name": "emitter_id",
+          "type": "string"
+        },
+        {
+          "name": "d1_source_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "resolve_prediction",
+      "discriminator": [
+        199,
+        159,
+        54,
+        235,
+        121,
+        68,
+        53,
+        137
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "prediction",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  101,
+                  100,
+                  105,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "prediction.market_id",
+                "account": "PredictionCommitment"
+              },
+              {
+                "kind": "account",
+                "path": "prediction.sequence",
+                "account": "PredictionCommitment"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "realized_outcome",
+          "type": "u8"
+        },
+        {
+          "name": "settlement_price",
+          "type": "u64"
+        },
+        {
+          "name": "brier_score_e4",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "update_config",
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "new_idl_uri",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "paused",
+          "type": {
+            "option": "bool"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GlobalConfig",
+      "discriminator": [
+        149,
+        8,
+        156,
+        202,
+        160,
+        252,
+        176,
+        217
+      ]
+    },
+    {
+      "name": "PoHTurnAnchor",
+      "discriminator": [
+        48,
+        67,
+        64,
+        104,
+        250,
+        4,
+        132,
+        18
+      ]
+    },
+    {
+      "name": "PredictionCommitment",
+      "discriminator": [
+        40,
+        8,
+        201,
+        193,
+        114,
+        14,
+        121,
+        190
+      ]
+    },
+    {
+      "name": "TokenSignalRecord",
+      "discriminator": [
+        166,
+        33,
+        183,
+        56,
+        66,
+        227,
+        103,
+        170
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ProgramPaused",
+      "msg": "Program is currently paused"
+    },
+    {
+      "code": 6001,
+      "name": "Unauthorized",
+      "msg": "Unauthorized: Signer is not the program authority"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidSequence",
+      "msg": "Invalid PoH sequence: must be strictly monotonic"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidPrevHash",
+      "msg": "Invalid previous hash chaining for PoH proof"
+    },
+    {
+      "code": 6004,
+      "name": "PredictionAlreadyResolved",
+      "msg": "Prediction already resolved"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidProbability",
+      "msg": "Invalid probability basis points: must be <= 10000"
+    },
+    {
+      "code": 6006,
+      "name": "MarketIdTooLong",
+      "msg": "Market ID exceeds maximum length (64 chars)"
+    },
+    {
+      "code": 6007,
+      "name": "RegimeTooLong",
+      "msg": "Regime identifier exceeds maximum length (32 chars)"
+    },
+    {
+      "code": 6008,
+      "name": "EmitterTooLong",
+      "msg": "Emitter identifier exceeds maximum length (64 chars)"
+    },
+    {
+      "code": 6009,
+      "name": "D1SourceIdTooLong",
+      "msg": "D1 source identifier exceeds maximum length (64 chars)"
+    },
+    {
+      "code": 6010,
+      "name": "IdlUriTooLong",
+      "msg": "IDL URI exceeds maximum length (128 chars)"
+    }
+  ],
+  "types": [
+    {
+      "name": "GlobalConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "idl_uri",
+            "type": "string"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "total_turn_anchors",
+            "type": "u64"
+          },
+          {
+            "name": "total_predictions",
+            "type": "u64"
+          },
+          {
+            "name": "total_signals",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoHTurnAnchor",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sequence",
+            "type": "u64"
+          },
+          {
+            "name": "turn_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "prev_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "emitter_id",
+            "type": "string"
+          },
+          {
+            "name": "d1_source_id",
+            "type": "string"
+          },
+          {
+            "name": "recorded_at_slot",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PredictionCommitment",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sequence",
+            "type": "u64"
+          },
+          {
+            "name": "market_id",
+            "type": "string"
+          },
+          {
+            "name": "market_type",
+            "type": "u8"
+          },
+          {
+            "name": "regime",
+            "type": "string"
+          },
+          {
+            "name": "strike_or_band",
+            "type": "i64"
+          },
+          {
+            "name": "touch_prob_bps",
+            "type": "u16"
+          },
+          {
+            "name": "settle_prob_bps",
+            "type": "u16"
+          },
+          {
+            "name": "committed_at",
+            "type": "i64"
+          },
+          {
+            "name": "expiry_at",
+            "type": "i64"
+          },
+          {
+            "name": "spot_at_commit",
+            "type": "u64"
+          },
+          {
+            "name": "resolved",
+            "type": "bool"
+          },
+          {
+            "name": "realized_outcome",
+            "type": "u8"
+          },
+          {
+            "name": "settlement_price",
+            "type": "u64"
+          },
+          {
+            "name": "brier_score_e4",
+            "type": "u32"
+          },
+          {
+            "name": "resolved_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenSignalRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "risk_verdict",
+            "type": "u8"
+          },
+          {
+            "name": "risk_score_bps",
+            "type": "u16"
+          },
+          {
+            "name": "bundle_cluster_detected",
+            "type": "bool"
+          },
+          {
+            "name": "lp_burned_or_locked",
+            "type": "bool"
+          },
+          {
+            "name": "details_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "eval_timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at_slot",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}
