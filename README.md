@@ -66,6 +66,7 @@ Three related things share one root, and this document keeps them distinct:
 | **PoH persistence** | Hash-chained, append-only log of mesh state with witness failover and periodic on-chain root anchoring |
 | **Envelope protocol** | Canonical-JSON slugs with deterministic SHA-256 integrity hashes, identical across Python, TypeScript, and Rust |
 | **Neural mesh** | Dynamic routing over a weighted loss matrix — latency, load, affinity, error history |
+| **Funding layer** | USDC micropayments that pay for inference across the fleet — devnet-first, metered per call |
 | **PQC core** | ML-KEM key encapsulation, ML-DSA signatures, hybrid classical fallback |
 | **Decoders** | Versioned transactions, Token-2022 TLV extensions, bonding-curve and AMM pool math |
 
@@ -82,6 +83,7 @@ UVIX-SOL/
 │   ├── hardware/        # Heterogeneous workload split across accelerator classes
 │   └── protocol/        # Wire codec, transaction & token decoders, RPC / PubSub clients
 ├── persistence/         # Proof-of-history chain node (UVIX-RI-1.0) & operator runbook
+├── funding/             # USDC micropayment layer for inference (devnet-first)
 ├── sol_uvix/            # Facade & backward-compatibility package
 ├── edge/                # Edge runtime: request router & telemetry sink
 ├── solana/wecrypto/     # The on-chain program (Anchor / Rust)
@@ -263,7 +265,37 @@ roots go when they start to travel.
 
 ---
 
-## 12. Configuration philosophy
+## 12. Funding layer: USDC micropayments for inference
+
+Work in the mesh is not free, and the suite accounts for it in the open.
+Inference is metered per call and paid in **USDC micro-amounts** on Circle's
+rails — sub-cent to cents per call, priced by model class from a published
+table (1 USDC = 1,000,000 micro-units).
+
+- **Devnet-first.** Development and day-to-day fleet use run on Solana
+  devnet with Circle test USDC. A dedicated funding wallet holds a working
+  float, so no call ever waits on a faucet run or a funding transfer. The
+  economics — price table, caps, burn rate — are proven where mistakes are
+  free; mainnet is a promotion, not a starting point.
+- **Fast at call time.** A call never blocks on a settlement confirmation.
+  Dispatch is optimistic against the funded float and the caller's budget
+  caps; metering is local and immediate, and settlement batches on a
+  cadence. The chain confirms history; it does not gate it.
+- **Receipts are slugs.** Every paid call produces a UVIX-RI-1.0 receipt —
+  quote, payment reference, model class, payload hash — recorded in the
+  proof-of-history chain (§6) like any other agreed fact. What the fleet
+  spent is therefore as verifiable as anything else it remembers.
+- **Budget policy is explicit.** Per-call caps, per-agent daily caps, and a
+  kill switch bound the float. An agent that hits its cap stops spending,
+  not thinking — local work continues, paid work queues.
+
+Status: design. The full specification — price-table shape, settlement
+cadence, wallet custody, and the gates on the way to mainnet — lives in
+[`funding/`](funding/).
+
+---
+
+## 13. Configuration philosophy
 
 The repository contains templates — `config/` holds topology *schemas*,
 the edge runtime ships a sanitized configuration *template*. Real
@@ -272,7 +304,7 @@ that never enters version control. If you are reading this repository to
 find the network, you are reading the wrong artifact: everything here is
 the *shape* of the system, none of it is the system.
 
-## 13. Tests
+## 14. Tests
 
 ```bash
 py -3.13 -m pytest -v          # unit & protocol suites
@@ -286,7 +318,7 @@ verification, chain continuity, decoder correctness, routing behavior, and
 on-chain state transitions are tested as independent invariants built on top
 of that common representation.
 
-## 14. Status
+## 15. Status
 
 Under active development by its maintainers. The envelope is stable at
 UVIX-RI-1.0. The chain remembers. The program awaits its day on-chain.
@@ -294,6 +326,6 @@ Further detail is available to those who already know where to ask.
 
 ---
 
-## 15. License
+## 16. License
 
 MIT © UVIX-SOL Maintainers
