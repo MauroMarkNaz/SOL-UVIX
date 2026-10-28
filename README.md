@@ -295,7 +295,33 @@ cadence, wallet custody, and the gates on the way to mainnet — lives in
 
 ---
 
-## 13. Configuration philosophy
+## 13. Tracks: separate routes, one protocol
+
+The suite's work runs on separate tracks. Each track is its own route —
+its own deployment, cadence, and failure domain — and all of them speak
+the same envelope (§5) and register in the same manifest. Routes multiply;
+formats don't.
+
+| Track | Carries | Character |
+|---|---|---|
+| **Data** | Market feeds, oracle data feeds, price proxies | Read-only, cacheable, hot |
+| **Interop** | Cross-chain export (§11), on-chain anchors (§6) | Data-only, batch cadence |
+| **Value** | The funding layer (§12) — the only track that moves money | Capped, pausable, gated |
+| **Memory** | Proof-of-history persistence and root publication | Append-only |
+| **Inference** | Model backends, paid per call by the value track | Routed (§7), metered (§12) |
+
+The separation is the safety property. Each track fails differently, so
+no track's failure is allowed to become another's: the value track can be
+frozen by its kill switch while data keeps flowing; the interop track can
+lag a batch while memory keeps appending; a data feed can die without
+taking inference with it. What never forks is the layer underneath — one
+slug namespace, one registry, one chain. A new capability joins the suite
+by taking a route on the appropriate track, not by moving into a
+neighbor's.
+
+---
+
+## 14. Configuration philosophy
 
 The repository contains templates — `config/` holds topology *schemas*,
 the edge runtime ships a sanitized configuration *template*. Real
@@ -304,7 +330,7 @@ that never enters version control. If you are reading this repository to
 find the network, you are reading the wrong artifact: everything here is
 the *shape* of the system, none of it is the system.
 
-## 14. Tests
+## 15. Tests
 
 ```bash
 py -3.13 -m pytest -v          # unit & protocol suites
@@ -318,7 +344,7 @@ verification, chain continuity, decoder correctness, routing behavior, and
 on-chain state transitions are tested as independent invariants built on top
 of that common representation.
 
-## 15. Status
+## 16. Status
 
 Under active development by its maintainers. The envelope is stable at
 UVIX-RI-1.0. The chain remembers. The program awaits its day on-chain.
@@ -326,6 +352,6 @@ Further detail is available to those who already know where to ask.
 
 ---
 
-## 16. License
+## 17. License
 
 MIT © UVIX-SOL Maintainers
