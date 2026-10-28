@@ -1,21 +1,82 @@
-MIT License
+UVIX-SOL PROPRIETARY LICENSE
 
-Copyright (c) 2026 Mauro Fanelli / JohnDaWalka
+Copyright (c) UVIX-SOL Maintainers.
+All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Scope
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+This license applies to the UVIX-SOL source code, documentation,
+protocol implementations, software components, tests, specifications,
+and other copyrightable material distributed with this license
+(collectively, the "Software").
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+UVIX, Universal-Inter_compatability, UVIX-RI, UVIX-RI-1.0, UVIX-SOL,
+and associated project identifiers are project names and identifiers.
+Nothing in this license grants any right to use those identifiers to
+represent, endorse, or imply affiliation with an independent product,
+service, protocol, or distribution.
+
+2. No Open-Source License Grant
+
+The Software is proprietary.
+
+Except for rights expressly granted in a separate written agreement
+by the applicable rights holder, no permission is granted to copy,
+modify, publish, distribute, sublicense, sell, commercially exploit,
+or create derivative works from the Software.
+
+Possession of or access to source code does not by itself grant a
+license to reproduce, redistribute, modify, or commercially exploit it.
+
+3. Authorized Use
+
+Use of the Software is permitted only to the extent expressly
+authorized in writing by the applicable rights holder.
+
+Any authorization may be subject to additional conditions, limitations,
+or termination provisions stated in that authorization.
+
+4. Third-Party Components
+
+This license does not replace, restrict, or modify licenses governing
+third-party software incorporated into, linked with, vendored with,
+or otherwise used by UVIX-SOL.
+
+Third-party components remain subject to their respective licenses
+and notices.
+
+Where a third-party license grants recipients rights independently
+of this license, those rights remain governed by that third-party
+license.
+
+5. Protocol and Interoperability
+
+Publication or disclosure of a UVIX protocol specification, envelope
+format, schema, test vector, identifier, or interoperability description
+does not constitute a license to UVIX-SOL source code except where an
+express license states otherwise.
+
+Any separately published specification or reference material is
+governed by the terms accompanying that material.
+
+6. No Implied Rights
+
+No rights or licenses are granted by implication, estoppel, or otherwise
+except as expressly stated in this license or in a separate written
+agreement.
+
+7. Disclaimer
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS
+PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, AND NON-INFRINGEMENT.
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE AUTHORS,
+MAINTAINERS, AND RIGHTS HOLDERS SHALL NOT BE LIABLE FOR ANY CLAIM,
+DAMAGES, OR OTHER LIABILITY ARISING FROM OR RELATED TO THE SOFTWARE OR
+ITS USE.
+
+8. Reservation of Rights
+
+All rights not expressly granted are reserved.

@@ -3,7 +3,7 @@
 [![Protocol](https://img.shields.io/badge/Protocol-UVIX--RI--1.0-blueviolet)](#5-the-envelope-uvix-ri-10)
 [![Solana Program](https://img.shields.io/badge/Solana-Anchor-14F195?logo=solana)](#10-the-on-chain-program)
 [![PQC Security](https://img.shields.io/badge/Security-Post--Quantum%20(ML--KEM%2FDSA)-black)](#9-post-quantum-core)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
 **UVIX-SOL** is a modular protocol suite for verifiable state across untrusted
 machines: a Solana on-chain program holding three registries, an append-only
@@ -352,6 +352,22 @@ Further detail is available to those who already know where to ask.
 
 ---
 
-## 17. License
+## 17. License and trademarks
 
-MIT © UVIX-SOL Maintainers
+UVIX-SOL is proprietary software. **All rights reserved.**
+
+UVIX-SOL is not distributed under an open-source license. Access to
+the source code does not by itself grant permission to copy, modify,
+redistribute, sublicense, sell, commercially exploit, or create
+derivative works from it.
+
+See LICENSE for the complete software licensing terms.
+
+UVIX™, UVIX-SOL™, UVIX-RI™, UVIX-RI-1.0™, and
+Universal-Inter_compatability™ are project names and source identifiers.
+Trademark rights are separate from the software copyright license.
+
+See TRADEMARKS.md for the trademark notice.
+
+Third-party components remain subject to their respective licenses
+and notices.
