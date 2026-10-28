@@ -1,8 +1,8 @@
 # UVIX-SOL
 
-[![Protocol](https://img.shields.io/badge/Protocol-UVIX--RI--1.0-blueviolet)](#4-the-envelope-uvix-ri-10)
-[![Solana Program](https://img.shields.io/badge/Solana-Anchor-14F195?logo=solana)](#9-the-on-chain-program)
-[![PQC Security](https://img.shields.io/badge/Security-Post--Quantum%20(ML--KEM%2FDSA)-black)](#8-post-quantum-core)
+[![Protocol](https://img.shields.io/badge/Protocol-UVIX--RI--1.0-blueviolet)](#5-the-envelope-uvix-ri-10)
+[![Solana Program](https://img.shields.io/badge/Solana-Anchor-14F195?logo=solana)](#10-the-on-chain-program)
+[![PQC Security](https://img.shields.io/badge/Security-Post--Quantum%20(ML--KEM%2FDSA)-black)](#9-post-quantum-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **UVIX-SOL** is a modular protocol suite for verifiable state across untrusted
@@ -17,7 +17,27 @@ That is deliberate. This document describes the machine, not its keeper.
 
 ---
 
-## 1. Design principles
+## 1. A note on names
+
+Three related things share one root, and this document keeps them distinct:
+
+- **UVIX** — the project's internal interoperability namespace and canonical
+  slug format, short for **Universal-Inter_compatability**. The spelling is
+  canonical: it is part of the identity, not a typo to be corrected. UVIX
+  is **not an external standard** — not IETF, not ISO, not Solana. It began
+  as the common identifier and build/runtime convention of the project's
+  Node tooling, and later became the namespace under which the UVIX-RI
+  protocol family is defined.
+- **`uvix`** — the internal build entry point used by the Node workflow.
+  The convention came first; the protocol grew out of it.
+- **UVIX-RI-1.0** — the first versioned wire/envelope protocol defined
+  under the UVIX namespace (see §5). It claims no standards body's
+  authority and needs none: its authority is that independent
+  implementations can check each other, byte for byte.
+
+---
+
+## 2. Design principles
 
 - **Determinism over trust.** Every cross-node claim is packaged so any other
   node — in any runtime — can recompute it byte-for-byte and say yes or no.
@@ -35,7 +55,7 @@ That is deliberate. This document describes the machine, not its keeper.
 
 ---
 
-## 2. What the suite does
+## 3. What the suite does
 
 | Layer | Responsibility |
 | :--- | :--- |
@@ -48,7 +68,7 @@ That is deliberate. This document describes the machine, not its keeper.
 
 ---
 
-## 3. Repository map
+## 4. Repository map
 
 ```
 UVIX-SOL/
@@ -70,7 +90,7 @@ UVIX-SOL/
 
 ---
 
-## 4. The envelope: UVIX-RI-1.0
+## 5. The envelope: UVIX-RI-1.0
 
 Every message, state snapshot, and result that crosses a node boundary is
 wrapped as a **slug**:
@@ -85,9 +105,14 @@ carries a `payload_hash`: SHA-256 over its canonical form. A receiver does
 not check a signature first; it recomputes the hash. If the bytes disagree
 with the hash, the message never happened.
 
+Interoperability under UVIX-RI-1.0 means exactly one thing: for the same
+protocol object, implementations in different runtimes produce the
+identical canonical representation and the identical verification result.
+Nothing weaker counts as interoperable.
+
 ---
 
-## 5. Proof-of-history persistence
+## 6. Proof-of-history persistence
 
 The mesh keeps its memory as a chain, one entry per agreed fact:
 
@@ -114,7 +139,7 @@ anchoring when the cadence calls for it.
 
 ---
 
-## 6. Neural mesh routing
+## 7. Neural mesh routing
 
 Work is routed by a multi-factor loss function evaluated per task class:
 
@@ -132,7 +157,7 @@ discovered through the overlay, never published in this repository.
 
 ---
 
-## 7. Protocol decoders
+## 8. Protocol decoders
 
 - **Versioned transactions (v0):** full wire decoding — address lookup
   tables, signer/writable permission maps, compute-budget and priority-fee
@@ -147,7 +172,7 @@ discovered through the overlay, never published in this repository.
 
 ---
 
-## 8. Post-quantum core
+## 9. Post-quantum core
 
 - **ML-KEM (Kyber):** quantum-resistant key encapsulation for node-to-node
   key exchange.
@@ -161,7 +186,7 @@ is never in this repository — only the mathematics that uses it.
 
 ---
 
-## 9. The on-chain program
+## 10. The on-chain program
 
 A single Anchor program holds the suite's public memory:
 
@@ -186,7 +211,7 @@ document. Consult the chain.
 
 ---
 
-## 10. Configuration philosophy
+## 11. Configuration philosophy
 
 The repository contains templates — `config/` holds topology *schemas*,
 the edge runtime ships a sanitized configuration *template*. Real
@@ -195,7 +220,7 @@ that never enters version control. If you are reading this repository to
 find the network, you are reading the wrong artifact: everything here is
 the *shape* of the system, none of it is the system.
 
-## 11. Tests
+## 12. Tests
 
 ```bash
 py -3.13 -m pytest -v          # unit & protocol suites
@@ -206,7 +231,7 @@ The roundtrip test is the one that matters most: the same slug, hashed in
 three runtimes, must produce one hash. Everything else in the suite is a
 consequence of that invariant holding.
 
-## 12. Status
+## 13. Status
 
 Under active development by its maintainers. The envelope is stable at
 UVIX-RI-1.0. The chain remembers. The program awaits its day on-chain.
@@ -214,6 +239,6 @@ Further detail is available to those who already know where to ask.
 
 ---
 
-## 13. License
+## 14. License
 
 MIT © UVIX-SOL Maintainers
