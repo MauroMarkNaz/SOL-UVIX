@@ -211,7 +211,34 @@ document. Consult the chain.
 
 ---
 
-## 11. Configuration philosophy
+## 11. Cross-chain export
+
+The mesh's memory does not have to stay on the chain where it was written.
+**Chainlink CCIP** is the suite's designated cross-chain transport: PoH
+root anchors and exported state — inference results, memory-state roots —
+leave their home chain as CCIP messages and arrive verifiable on the
+destination under the same rule as everything else here. The payload is
+canonical, the hash is recomputed on arrival, and the envelope does not
+care which chain it lands on.
+
+- **Lanes:** the routes that matter — Solana ↔ EVM, both directions,
+  testnet and mainnet — are confirmed in Chainlink's own directory, not
+  assumed.
+- **Double verification:** CCIP's security layer attests to the transport;
+  the UVIX `payload_hash` attests to the content. A root is checkable
+  twice, by two systems that owe each other nothing.
+- **CRE:** Chainlink's Runtime Environment is under evaluation as an
+  external compute and verification environment for these exports — a
+  place where workflows can react to anchored state without any mesh node
+  having to be awake for it.
+
+Status, stated plainly: designated and lane-verified, not yet
+load-bearing. The memo anchor (§6) is what runs today. CCIP is where the
+roots go when they start to travel.
+
+---
+
+## 12. Configuration philosophy
 
 The repository contains templates — `config/` holds topology *schemas*,
 the edge runtime ships a sanitized configuration *template*. Real
@@ -220,7 +247,7 @@ that never enters version control. If you are reading this repository to
 find the network, you are reading the wrong artifact: everything here is
 the *shape* of the system, none of it is the system.
 
-## 12. Tests
+## 13. Tests
 
 ```bash
 py -3.13 -m pytest -v          # unit & protocol suites
@@ -231,7 +258,7 @@ The roundtrip test is the one that matters most: the same slug, hashed in
 three runtimes, must produce one hash. Everything else in the suite is a
 consequence of that invariant holding.
 
-## 13. Status
+## 14. Status
 
 Under active development by its maintainers. The envelope is stable at
 UVIX-RI-1.0. The chain remembers. The program awaits its day on-chain.
@@ -239,6 +266,6 @@ Further detail is available to those who already know where to ask.
 
 ---
 
-## 14. License
+## 15. License
 
 MIT © UVIX-SOL Maintainers
