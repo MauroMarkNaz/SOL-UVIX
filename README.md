@@ -34,6 +34,9 @@ Three related things share one root, and this document keeps them distinct:
   under the UVIX namespace (see §5). It claims no standards body's
   authority and needs none: its authority is that independent
   implementations can check each other, byte for byte.
+- **UVIX-SOL** — the larger system that applies UVIX-RI-1.0 to Solana,
+  persistence, cryptography, routing, and decoding. UVIX is the namespace;
+  UVIX-SOL is one system built under it.
 
 ---
 
@@ -99,11 +102,27 @@ wrapped as a **slug**:
 UVIX::Base64( CanonicalJSON(Slug) )::END
 ```
 
-Canonical JSON means sorted keys, fixed separators, no ambiguity — the same
-logical object serializes to the same bytes in every runtime. Each slug
-carries a `payload_hash`: SHA-256 over its canonical form. A receiver does
-not check a signature first; it recomputes the hash. If the bytes disagree
-with the hash, the message never happened.
+Canonical JSON means lexicographically sorted keys and the fixed separators
+`,` and `:` (no whitespace) — the same logical object serializes to the same
+bytes in every runtime.
+
+Each slug carries a `payload_hash`, defined precisely over the payload only:
+
+```
+payload_hash = SHA-256( UTF-8( CanonicalJSON(raw_payload) ) )
+```
+
+The hash domain is the slug's `raw_payload` object and nothing else: the
+envelope metadata (protocol version, source/target platforms, compatibility
+layer) and `payload_hash` itself are **outside** the hash, so the definition
+is not circular. A SHA-256 hash proves integrity of the payload bytes; it
+does not, by itself, authenticate a sender.
+
+Verification begins with canonicalization and integrity. The receiver
+reconstructs the hash domain and recomputes `payload_hash`; malformed or
+mismatched envelopes are rejected before authentication is evaluated. Where
+authentication is required, signature verification follows integrity
+verification.
 
 Interoperability under UVIX-RI-1.0 means exactly one thing: for the same
 protocol object, implementations in different runtimes produce the
@@ -113,6 +132,10 @@ Nothing weaker counts as interoperable.
 ---
 
 ## 6. Proof-of-history persistence
+
+UVIX proof-of-history persistence is the suite's application-level
+append-only hash-chain mechanism and is distinct from Solana's Proof of
+History consensus clock.
 
 The mesh keeps its memory as a chain, one entry per agreed fact:
 
@@ -143,14 +166,16 @@ anchoring when the cadence calls for it.
 
 Work is routed by a multi-factor loss function evaluated per task class:
 
-$$\text{Cost} = w_1 \cdot \ln(1 + \text{Latency}) + w_2 \cdot \frac{1}{1.01 - \text{Load}} + w_3 \cdot \text{AffinityPenalty} + w_4 \cdot \text{ErrorPenalty}$$
+$$
+\text{Cost} = w_1\ln(1+\text{Latency}) + w_2\frac{1}{1.01-\text{Load}} + w_3\text{AffinityPenalty} + w_4\text{ErrorPenalty}
+$$
 
 Task classes carry affinities — text and embedding work gravitates to one
 accelerator class, raster and video to another, chain instructions to
 validator-adjacent nodes, signatures to the cryptographic signer class,
 game-theoretic solving to the solver class. The matrix is re-weighted by
 observed latency and error history; the mesh learns which of its limbs are
-fast and which are honest.
+fast and reliable.
 
 Node classes, capacities, and membership are runtime facts. They are
 discovered through the overlay, never published in this repository.
@@ -254,9 +279,12 @@ py -3.13 -m pytest -v          # unit & protocol suites
 node tests/test_roundtrip.js   # cross-runtime envelope verification
 ```
 
-The roundtrip test is the one that matters most: the same slug, hashed in
-three runtimes, must produce one hash. Everything else in the suite is a
-consequence of that invariant holding.
+The roundtrip test protects UVIX's foundational interoperability invariant:
+the same logical slug, canonicalized independently in every supported
+runtime, must produce the same bytes and the same hash. Cryptographic
+verification, chain continuity, decoder correctness, routing behavior, and
+on-chain state transitions are tested as independent invariants built on top
+of that common representation.
 
 ## 14. Status
 
