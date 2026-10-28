@@ -1,196 +1,219 @@
-# UVIX-SOL: Post-Quantum Cryptography, Solana On-Chain Verification & Neural Mesh Edge Network
+# UVIX-SOL
 
-[![Solana Program](https://img.shields.io/badge/Solana-Anchor%201.2.1-14F195?logo=solana)](https://solana.com)
-[![Protocol](https://img.shields.io/badge/Protocol-UVIX--RI--1.0-blueviolet)](#3-sol-uvix-protocol-suite-uvix-ri-10)
-[![PQC Security](https://img.shields.io/badge/Security-Post--Quantum%20(ML--KEM%2FDSA)-black)](#4-post-quantum-cryptography-corecrypto)
-[![Neural Mesh](https://img.shields.io/badge/Mesh-Neural%20Edge%20Overlay-blue)](#2-neural-mesh-topology-within-an-edge-network-coremesh)
-[![Hardware Split](https://img.shields.io/badge/Hardware-NPU%20(50%20TOPS)%20%7C%20RTX%204070-76B900)](#5-heterogeneous-hardware-workload-split-corehardware)
+[![Protocol](https://img.shields.io/badge/Protocol-UVIX--RI--1.0-blueviolet)](#4-the-envelope-uvix-ri-10)
+[![Solana Program](https://img.shields.io/badge/Solana-Anchor-14F195?logo=solana)](#9-the-on-chain-program)
+[![PQC Security](https://img.shields.io/badge/Security-Post--Quantum%20(ML--KEM%2FDSA)-black)](#8-post-quantum-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-UVIX-SOL is a high-performance modular protocol suite combining **Solana on-chain state verification**, **lattice-based post-quantum cryptography (PQC)**, **a dynamic neural mesh topology across edge networks**, and **heterogeneous hardware acceleration (AMD XDNA 2 NPU + NVIDIA RTX discrete GPU)**.
+**UVIX-SOL** is a modular protocol suite for verifiable state across untrusted
+machines: a Solana on-chain program holding three registries, an append-only
+proof-of-history chain that remembers what the mesh agreed on, a deterministic
+wire envelope that lets three languages check each other's work, lattice-based
+post-quantum cryptography, and a neural routing layer that decides where work
+goes without being told twice.
+
+What it runs on, where it runs, and who runs it are not documented here.
+That is deliberate. This document describes the machine, not its keeper.
 
 ---
 
-## 1. Modular Architecture Overview
+## 1. Design principles
 
-The repository is organized into cleanly decoupled, nested subsystems under `core/`:
+- **Determinism over trust.** Every cross-node claim is packaged so any other
+  node — in any runtime — can recompute it byte-for-byte and say yes or no.
+  Nothing is believed because of who sent it.
+- **Append-only memory.** History is a hash chain. Entries are never edited,
+  only superseded by later entries that say so. A disagreement about the past
+  is settled by recomputation, not by authority.
+- **Commit before outcome.** Predictions are sealed on-chain before their
+  horizons expire and scored after the fact, in the open, by formula. The
+  ledger does not let anyone remember being right.
+- **Opacity is a feature.** The repository ships templates, schemas, and
+  proofs. It does not ship topology, membership, endpoints, or operator
+  detail. A reader can verify everything about how the system works and
+  learn nothing about where it sleeps.
+
+---
+
+## 2. What the suite does
+
+| Layer | Responsibility |
+| :--- | :--- |
+| **On-chain program** | Three registries: prediction commitments, proof-of-history turn proofs, token forensic signals |
+| **PoH persistence** | Hash-chained, append-only log of mesh state with witness failover and periodic on-chain root anchoring |
+| **Envelope protocol** | Canonical-JSON slugs with deterministic SHA-256 integrity hashes, identical across Python, TypeScript, and Rust |
+| **Neural mesh** | Dynamic routing over a weighted loss matrix — latency, load, affinity, error history |
+| **PQC core** | ML-KEM key encapsulation, ML-DSA signatures, hybrid classical fallback |
+| **Decoders** | Versioned transactions, Token-2022 TLV extensions, bonding-curve and AMM pool math |
+
+---
+
+## 3. Repository map
 
 ```
 UVIX-SOL/
 ├── core/
-│   ├── mesh/                   # Neural Mesh Topology & Edge Network Routing
-│   │   ├── node.py             # MeshNode, NodeType, Capacity & Telemetry models
-│   │   ├── topology.py         # Dynamic routing graph & neural loss weight matrix
-│   │   ├── edge_network.py     # Edge overlay manager & Tailscale peer discovery
-│   │   └── router.py           # UVIX-RI-1.0 packet dispatcher & pathfinder
-│   ├── crypto/                 # Post-Quantum & Hybrid Cryptography
-│   │   ├── pqc.py              # ML-KEM (Kyber) & ML-DSA (Dilithium) + X25519 fallback
-│   │   ├── pqc_api.py          # Cryptographic REST API endpoints
-│   │   └── pqc_files.py        # Authenticated key storage & sealed envelopes
-│   ├── intelligence/           # Neural Strategy & Game-Theoretic Solvers
-│   │   ├── processor.py        # AI reasoning & heuristic synthesis
-│   │   ├── router.py           # Multi-provider LLM routing (local & external)
-│   │   ├── dossier.py          # Opponent intelligence & historical profiling
-│   │   ├── equity.py           # Monte Carlo equity simulation
-│   │   ├── nash.py             # CFR+ Nash equilibrium solver
-│   │   ├── engine.py           # State evaluation engine
-│   │   ├── server.py           # API server daemon
-│   │   └── vector_store/       # FAISS vector store & embeddings
-│   ├── hardware/               # Heterogeneous Workload Split
-│   │   ├── orchestrator.py     # HardwareWorkloadOrchestrator
-│   │   ├── npu_engine.py       # AMD XDNA 2 NPU DirectML text offload
-│   │   └── gpu_pipeline.py     # NVIDIA RTX 4070 NVENC/NVDEC & CUDA raster pipeline
-│   └── protocol/               # Solana Wire & UVIX-RI-1.0 Protocol Envelopes
-│       ├── codec.py            # Canonical JSON & SHA-256 payload integrity hashing
-│       ├── transactions.py     # VersionedTx (v0), ALTs, ComputeBudget fees
-│       ├── tokens.py           # SPL Token & Token-2022 TLV extension decoders
-│       ├── pumpfun.py          # Pump.fun bonding curves & simulation math
-│       ├── raydium.py          # Raydium V4 AMM pools & simulation math
-│       ├── ws_client.py        # PubSub WebSocket client
-│       ├── bridge.py           # Edge worker client & webhook dispatch
-│       ├── cli_wrapper.py      # Agave/Solana CLI wrapper
-│       └── client.py           # Solana RPC client
-├── sol_uvix/                   # Facade & backward-compatibility package
-├── edge/                       # Edge Network Runtime
-│   ├── worker.ts               # Cloudflare Worker edge router & D1 telemetry sink
-│   └── wrangler.toml           # Cloudflare Wrangler configuration template
-├── solana/                     # Solana On-Chain Programs
-│   └── wecrypto/               # Complete Anchor Rust program suite
-├── idl/                        # Program IDLs (canonical schemas)
-├── config/                     # Topology schemas & configuration templates
-│   ├── models.json             # AI routing model definitions
-│   └── tailnet.template.json   # Sanitized Tailscale mesh configuration template
-├── scripts/                    # Hardware split & automation setup scripts
-└── tests/                      # Automated test suite (Pytest + Node.js)
+│   ├── mesh/            # Neural topology, routing graph, loss matrix, envelope dispatch
+│   ├── crypto/          # ML-KEM / ML-DSA, hybrid fallback, sealed key storage
+│   ├── intelligence/    # Reasoning, dossier profiling, Monte Carlo equity, CFR+ solver
+│   ├── hardware/        # Heterogeneous workload split across accelerator classes
+│   └── protocol/        # Wire codec, transaction & token decoders, RPC / PubSub clients
+├── persistence/         # Proof-of-history chain node (UVIX-RI-1.0) & operator runbook
+├── sol_uvix/            # Facade & backward-compatibility package
+├── edge/                # Edge runtime: request router & telemetry sink
+├── solana/wecrypto/     # The on-chain program (Anchor / Rust)
+├── idl/                 # Canonical program IDL schemas
+├── config/              # Topology schemas & sanitized configuration templates
+├── scripts/             # Setup & automation
+└── tests/               # Pytest + Node.js cross-runtime verification
 ```
 
 ---
 
-## 2. Neural Mesh Topology within an Edge Network (`core/mesh`)
+## 4. The envelope: UVIX-RI-1.0
 
-The mesh system dynamically models an edge network of heterogeneous nodes (Cloudflare Workers, local NPU/GPU machines, and private Tailscale nodes):
+Every message, state snapshot, and result that crosses a node boundary is
+wrapped as a **slug**:
 
-```mermaid
-flowchart TD
-    subgraph EdgeOverlay ["Edge Network & Private Mesh Overlay"]
-        EW["Edge Router Node<br/>(Cloudflare Worker / V8)"]
-        TS["Tailnet Private Overlay<br/>(Zero-Trust P2P Mesh)"]
-        EW <--> TS
-    end
-
-    subgraph NeuralMatrix ["Dynamic Neural Routing Loss Matrix"]
-        EW -->|Weight Loss Matrix| NPU["Local NPU Node<br/>AMD XDNA 2 (50 TOPS)"]
-        EW -->|Weight Loss Matrix| GPU["Local GPU Node<br/>NVIDIA RTX 4070"]
-        EW -->|Weight Loss Matrix| CFR["Neural Solver Node<br/>CFR+ / Nash Solvers"]
-        EW -->|Weight Loss Matrix| PQC["PQC Signer Node<br/>ML-KEM / ML-DSA"]
-        EW -->|Weight Loss Matrix| SOL["Solana RPC Node<br/>Agave Validator"]
-    end
-
-    subgraph Envelopes ["Canonical Slugs"]
-        NPU --> SLUG["UVIX-RI-1.0 Envelope<br/>UVIX::base64::END"]
-        GPU --> SLUG
-        CFR --> SLUG
-        PQC --> SLUG
-        SOL --> SLUG
-    end
+```
+UVIX::Base64( CanonicalJSON(Slug) )::END
 ```
 
-### Dynamic Neural Weight Calculation
-Tasks are routed using a multi-factor loss function:
+Canonical JSON means sorted keys, fixed separators, no ambiguity — the same
+logical object serializes to the same bytes in every runtime. Each slug
+carries a `payload_hash`: SHA-256 over its canonical form. A receiver does
+not check a signature first; it recomputes the hash. If the bytes disagree
+with the hash, the message never happened.
+
+---
+
+## 5. Proof-of-history persistence
+
+The mesh keeps its memory as a chain, one entry per agreed fact:
+
+```
+entry  = { node, prevHash, seq, text, ts }
+hash   = SHA-256( CanonicalJSON(entry) )
+```
+
+- `seq` is monotonic per node; `prevHash` binds each entry to the one before
+  it, back to a genesis entry. Break any link and every later hash fails.
+- **Witness model:** entries are validated, then witnessed — a primary
+  witness countersigns, peers witness in failover order. An entry no witness
+  has seen is *local-flagged*: valid, but marked as not yet corroborated,
+  and swept up by periodic reconciliation.
+- **Anchoring:** at fixed intervals the chain's root hash is committed to
+  Solana in a memo, so the mesh's memory acquires an external timestamp it
+  cannot forge after the fact.
+- **Verification is total:** any holder of the chain can recompute every
+  hash from genesis and confirm the head. There is no trusted checkpoint.
+
+The chain is young. Its first seals are set; its witnesses are still
+gathering. That is the correct order — memory first, corroboration second,
+anchoring when the cadence calls for it.
+
+---
+
+## 6. Neural mesh routing
+
+Work is routed by a multi-factor loss function evaluated per task class:
+
 $$\text{Cost} = w_1 \cdot \ln(1 + \text{Latency}) + w_2 \cdot \frac{1}{1.01 - \text{Load}} + w_3 \cdot \text{AffinityPenalty} + w_4 \cdot \text{ErrorPenalty}$$
 
-- **Text / Token Offload**: High affinity for `NPU_ACCELERATOR`
-- **Video / Raster Render**: High affinity for `GPU_COMPUTE`
-- **Solana Instructions**: High affinity for `SOLANA_VALIDATOR`
-- **State Signatures**: High affinity for `PQC_SIGNER`
-- **Game Theory**: High affinity for `NEURAL_SOLVER`
+Task classes carry affinities — text and embedding work gravitates to one
+accelerator class, raster and video to another, chain instructions to
+validator-adjacent nodes, signatures to the cryptographic signer class,
+game-theoretic solving to the solver class. The matrix is re-weighted by
+observed latency and error history; the mesh learns which of its limbs are
+fast and which are honest.
+
+Node classes, capacities, and membership are runtime facts. They are
+discovered through the overlay, never published in this repository.
 
 ---
 
-## 3. SOL-UVIX Protocol Suite (`UVIX-RI-1.0`)
+## 7. Protocol decoders
 
-All cross-node messages, blockchain states, and hardware results are encapsulated in deterministic **UVIX Slugs**:
-
-$$\text{UVIX}::\text{Base64}\left(\text{CanonicalJSON}\left(\text{Slug}\right)\right)::\text{END}$$
-
-Every slug includes a deterministic sorted-key SHA-256 payload integrity hash (`payload_hash`), enabling zero-trust verification across language runtimes (Python, TypeScript, Rust).
-
-### Solana Decoders:
-- **Versioned Transactions (`v0`)**: Decodes transaction wire formats, Address Lookup Tables (ALTs), signer/writable permissions, and priority fees.
-- **SPL Token-2022**: Decodes TLV extensions including `TransferFeeConfig`, `InterestBearingConfig`, and `TokenMetadata`.
-- **DEX Bonding Curves**: Binary decoders and constant-product swap simulations for Pump.fun and Raydium V4 pools.
-
----
-
-## 4. Post-Quantum Cryptography (`core/crypto`)
-
-Lattice-based quantum-resistant cryptography implementing:
-- **ML-KEM (Kyber)**: Key encapsulation mechanism for quantum-safe key exchange.
-- **ML-DSA (Dilithium)**: Digital signature algorithm for authenticating state turn proofs.
-- **Classical Fallback**: Hybrid X25519 / Ed25519 mode with AES-256-GCM symmetric payload encryption.
+- **Versioned transactions (v0):** full wire decoding — address lookup
+  tables, signer/writable permission maps, compute-budget and priority-fee
+  extraction.
+- **SPL Token-2022:** raw TLV extension parsing, including
+  `TransferFeeConfig` (with epoch-scheduled fee changes),
+  `InterestBearingConfig`, `PermanentDelegate`, and `TokenMetadata` —
+  decoded from bytes, not from anyone's API summary.
+- **Market structures:** bonding-curve mathematics and constant-product
+  pool simulation for launchpad and AMM venues, computed locally from
+  first principles.
 
 ---
 
-## 5. Heterogeneous Hardware Workload Split (`core/hardware`)
+## 8. Post-quantum core
 
-| Workload Type | Assigned Hardware | Execution Engine | Protocol Layer |
-| :--- | :--- | :--- | :--- |
-| **NLP & Text Embeddings** | **AMD Ryzen AI 9 HX 370 (NPU)** | AMD XDNA 2 (50 TOPS) via DirectML | `npu-text-v1` |
-| **Video Transcoding** | **NVIDIA RTX 4070 Laptop GPU** | NVENC / NVDEC hardware encoders | `gpu-video-raster-v1` |
-| **Raster Compute & 3D** | **NVIDIA RTX 4070 Laptop GPU** | Ada Lovelace CUDA / Direct3D12 | `gpu-video-raster-v1` |
+- **ML-KEM (Kyber):** quantum-resistant key encapsulation for node-to-node
+  key exchange.
+- **ML-DSA (Dilithium):** lattice signatures authenticating state turn
+  proofs.
+- **Hybrid fallback:** X25519 / Ed25519 with AES-256-GCM sealed payloads,
+  for peers and paths where the lattice suite is not yet negotiated.
 
----
-
-## 6. Solana On-Chain Program: `WeCrypto` (`solana/wecrypto`)
-
-- **Program ID**: `9HLcTyxqXTimBXj9RvP2dZtTwZsNdzdiGRNRdUTTUp5B`
-- **Canonical IDL**: [`idl/wecrypto.json`](idl/wecrypto.json)
-- **Framework**: Anchor `1.2.1` / Agave SDK `v3.1+` / Rust `1.89+`
-
-### Instructions:
-- `initialize`: Singleton `GlobalConfig` initialization with admin authority.
-- `record_turn_proof`: Commits monotonic state hashes anchored to proof turns and slot height.
-- `commit_prediction`: Cryptographically commits market probability forecasts before expiration horizons.
-- `resolve_prediction`: Records realized market outcomes and quadratic Brier score loss.
-- `log_token_signal`: Stores on-chain forensic assessment (risk score, LP burn/lock status, bundle detection).
-- `update_config`: Administrative pause controls and authority migration.
+Keys live in sealed, authenticated storage. Key material, like topology,
+is never in this repository — only the mathematics that uses it.
 
 ---
 
-## 7. Setup & Configuration
+## 9. The on-chain program
 
-### Prerequisites
-- Python 3.10+ (Python 3.13 recommended)
-- Node.js 20+
-- Rust 1.89+ / Solana CLI / Anchor 1.2.1
+A single Anchor program holds the suite's public memory:
 
-### Environment Configuration
-Copy template configurations to initialize your environment:
+- **Program ID:** `9HLcTyxqXTimBXj9RvP2dZtTwZsNdzdiGRNRdUTTUp5B`
+- **Canonical IDL:** [`idl/wecrypto.json`](idl/wecrypto.json)
+
+| Instruction | Semantics |
+| :--- | :--- |
+| `initialize` | Creates the singleton `GlobalConfig`; establishes the authority |
+| `commit_prediction` | Seals a market probability forecast *before* its expiration horizon |
+| `resolve_prediction` | Records the realized outcome; scores the commitment by quadratic (Brier) loss |
+| `record_turn_proof` | Anchors a monotonic state hash to a proof turn and slot height |
+| `log_token_signal` | Stores a forensic assessment: risk score, LP burn/lock status, bundle detection |
+| `update_config` | Administrative pause controls and authority migration |
+
+Three registries, one program: what was predicted, what was proven, what
+was flagged. Commitments cannot be backdated, resolutions cannot be
+un-scored, and signals cannot be quietly removed.
+
+The program's deployment state is a fact of the chain, not of this
+document. Consult the chain.
+
+---
+
+## 10. Configuration philosophy
+
+The repository contains templates — `config/` holds topology *schemas*,
+the edge runtime ships a sanitized configuration *template*. Real
+configuration is assembled at deployment time, elsewhere, from material
+that never enters version control. If you are reading this repository to
+find the network, you are reading the wrong artifact: everything here is
+the *shape* of the system, none of it is the system.
+
+## 11. Tests
+
 ```bash
-cp config/tailnet.template.json config/tailnet.json
-cp edge/wrangler.toml edge/wrangler.local.toml
+py -3.13 -m pytest -v          # unit & protocol suites
+node tests/test_roundtrip.js   # cross-runtime envelope verification
 ```
 
-Set environment variables in `.env`:
-```bash
-SOLANA_RPC_URL="https://api.devnet.solana.com"
-UVIX_GATEWAY_URL="https://edge.yourdomain.com/uvix"
-TAILNET_CONFIG_PATH="config/tailnet.json"
-```
+The roundtrip test is the one that matters most: the same slug, hashed in
+three runtimes, must produce one hash. Everything else in the suite is a
+consequence of that invariant holding.
 
-### Running Tests
-Execute the full test suite (34 unit tests):
-```bash
-py -3.13 -m pytest -v
-```
+## 12. Status
 
-Execute cross-runtime Node.js verification:
-```bash
-node tests/test_roundtrip.js
-```
+Under active development by its maintainers. The envelope is stable at
+UVIX-RI-1.0. The chain remembers. The program awaits its day on-chain.
+Further detail is available to those who already know where to ask.
 
 ---
 
-## 8. License
+## 13. License
 
-MIT © [UVIX-SOL Maintainers](https://github.com/JohnDaWalka/UVIX-SOL).
+MIT © UVIX-SOL Maintainers
