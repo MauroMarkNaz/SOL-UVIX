@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install PQC dependencies
-        run: pip install quantcrypt
+        run: pip install quantcrypt requests
       - name: Verify PQC Implementation
         run: |
           if [ -f "pqc.py" ]; then

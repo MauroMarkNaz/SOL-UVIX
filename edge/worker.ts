@@ -27,6 +27,22 @@ export default {
         return new Response("Method Not Allowed", { status: 405 });
       }
 
+      if (!env.AUTH_SECRET?.trim()) {
+        return new Response(JSON.stringify({
+          error: "Ingestion authentication is not configured"
+        }), { status: 503, headers: { "Content-Type": "application/json" } });
+      }
+
+      if (!await hasValidBearerToken(request, env.AUTH_SECRET)) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: {
+            "Content-Type": "application/json",
+            "WWW-Authenticate": "Bearer"
+          }
+        });
+      }
+
       try {
         const body = await request.json() as { envelope?: string };
         const envelope = body.envelope;
@@ -94,6 +110,27 @@ export default {
     return new Response("Not Found", { status: 404 });
   }
 };
+
+async function hasValidBearerToken(request: Request, secret: string): Promise<boolean> {
+  const authorization = request.headers.get("Authorization");
+  if (!authorization?.startsWith("Bearer ")) return false;
+
+  const token = authorization.slice("Bearer ".length);
+  if (!token || token.length > 1024) return false;
+
+  const encoder = new TextEncoder();
+  const [expectedDigest, tokenDigest] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(secret)),
+    crypto.subtle.digest("SHA-256", encoder.encode(token))
+  ]);
+  const expected = new Uint8Array(expectedDigest);
+  const actual = new Uint8Array(tokenDigest);
+  let difference = 0;
+  for (let index = 0; index < expected.length; index++) {
+    difference |= expected[index] ^ actual[index];
+  }
+  return difference === 0;
+}
 
 /**
  * Deterministic JSON stringify matching Python sort_keys=True, separators=(',', ':')
