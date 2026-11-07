@@ -14,9 +14,10 @@ Usage:
     from pqc import PQCrypto
     
     pqc = PQCrypto()
-    pub, priv = pqc.generate_keypair()
-    encrypted = pqc.encrypt(data, recipient_public_key)
-    decrypted = pqc.decrypt(encrypted, private_key)
+    data = b"example message"
+    key = pqc.generate_encryption_keypair()
+    encrypted = pqc.encrypt(data, key.public_key)
+    decrypted = pqc.decrypt(encrypted, key.private_key)
 """
 
 import os
@@ -329,8 +330,17 @@ def quick_decrypt(ciphertext: bytes, private_key: bytes) -> bytes:
     return PQCrypto().decrypt(ciphertext, private_key)
 
 
-# CLI when run directly
-if __name__ == "__main__":
+__all__ = [
+    "PQCKey",
+    "PQCrypto",
+    "PQCKeyStore",
+    "quick_encrypt",
+    "quick_decrypt",
+    "main",
+]
+
+
+def main() -> None:
     import sys
     
     if len(sys.argv) < 2:
@@ -387,3 +397,7 @@ if __name__ == "__main__":
     
     else:
         print(f"Unknown command: {cmd}")
+
+
+if __name__ == "__main__":
+    main()

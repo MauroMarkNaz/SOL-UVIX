@@ -7,12 +7,24 @@ compatibility_date = "2026-05-01"
 # pattern = "edge.yourdomain.com/uvix*"
 # custom_domain = true
 
+[[routes]]
+pattern = "uvix-edge.leaksnipe.win"
+custom_domain = true
+
+[[routes]]
+pattern = "sol-uvix.leaksnipe.win"
+custom_domain = true
+
+[[routes]]
+pattern = "uvix-edge.leaksnipe.win/*"
+zone_name = "leaksnipe.win"
+
+[[routes]]
+pattern = "sol-uvix.leaksnipe.win/*"
+zone_name = "leaksnipe.win"
+
 [[d1_databases]]
 binding = "UVIX_TELEMETRY_D1"
 database_name = "uvix-telemetry"
-database_id = "00000000-0000-0000-0000-000000000000"
-
-[[d1_databases]]
-binding = "UVIX_STATE_D1"
-database_name = "uvix-state"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "b3df6033-c0a6-4f71-986c-b063787c37c8"
+migrations_dir = "migrations"

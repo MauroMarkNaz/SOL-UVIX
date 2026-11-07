@@ -232,10 +232,8 @@ class PQCBackupService:
         return sorted(backups, key=lambda x: x["created"], reverse=True)
 
 
-if __name__ == "__main__":
+def main() -> None:
     import sys
-    
-    fs = PQCFileService()
     
     if len(sys.argv) < 2:
         print("PQC File Encryption Service")
@@ -249,6 +247,7 @@ if __name__ == "__main__":
     cmd = sys.argv[1]
     
     if cmd == "encrypt":
+        fs = PQCFileService()
         path = Path(sys.argv[2])
         key = sys.argv[3]
         if path.is_file():
@@ -259,6 +258,7 @@ if __name__ == "__main__":
             print(f"✓ Encrypted {len(result['encrypted_files'])} files")
     
     elif cmd == "decrypt":
+        fs = PQCFileService()
         path = Path(sys.argv[2])
         key = sys.argv[3]
         if path.is_file():
@@ -267,38 +267,36 @@ if __name__ == "__main__":
         else:
             result = fs.decrypt_directory(path, key)
             print(f"✓ Decrypted {len(result['decrypted_files'])} files")
-    
     elif cmd == "test":
-        from pqc import PQCrypto
-        
+        import tempfile
+
         print("Testing PQC File Service...")
-        
-        # Create test key
-        pqc = PQCrypto()
-        key = pqc.generate_encryption_keypair()
-        store = PQCKeyStore()
-        store.save_key(key, "test-file-key")
-        
-        # Create test file
-        test_dir = Path("test_pqc_dir")
-        test_dir.mkdir(exist_ok=True)
-        (test_dir / "secret.txt").write_text("Top secret data!")
-        (test_dir / "data.json").write_text('{"key": "value"}')
-        
-        # Encrypt directory
-        result = fs.encrypt_directory(test_dir, "test-file-key")
-        print(f"  ✓ Encrypted {len(result['encrypted_files'])} files")
-        
-        # Verify encrypted files exist
-        assert (test_dir / "secret.txt.pqc").exists()
-        
-        # Decrypt
-        result = fs.decrypt_directory(test_dir, "test-file-key", delete_encrypted=True)
-        print(f"  ✓ Decrypted {len(result['decrypted_files'])} files")
-        
-        # Verify content
-        assert (test_dir / "secret.txt").read_text() == "Top secret data!"
-        
-        # Cleanup
-        shutil.rmtree(test_dir)
+
+        with tempfile.TemporaryDirectory(prefix="pqc-files-test-") as temp_dir:
+            test_root = Path(temp_dir)
+            key_store_dir = test_root / "keys"
+            test_dir = test_root / "files"
+            test_dir.mkdir()
+
+            key = PQCrypto().generate_encryption_keypair()
+            PQCKeyStore(key_store_dir).save_key(key, "test-file-key")
+            fs = PQCFileService(key_store_path=key_store_dir)
+
+            (test_dir / "secret.txt").write_text("Top secret data!")
+            (test_dir / "data.json").write_text('{"key": "value"}')
+
+            result = fs.encrypt_directory(test_dir, "test-file-key")
+            print(f"  ✓ Encrypted {len(result['encrypted_files'])} files")
+            assert (test_dir / "secret.txt.pqc").exists()
+
+            result = fs.decrypt_directory(
+                test_dir, "test-file-key", delete_encrypted=True
+            )
+            print(f"  ✓ Decrypted {len(result['decrypted_files'])} files")
+            assert (test_dir / "secret.txt").read_text() == "Top secret data!"
+
         print("\n✅ All file encryption tests passed!")
+
+
+if __name__ == "__main__":
+    main()
