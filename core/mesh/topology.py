@@ -45,6 +45,26 @@ class NeuralMeshTopology:
         if bidirectional:
             self.adj[to_id].add(from_id)
 
+    def has_task_affinity(self, target_node: MeshNode, task_type: str) -> bool:
+        """Determines if target_node has hardware or specialty affinity for task_type."""
+        task_lower = task_type.lower()
+        specialties = [s.lower() for s in target_node.capacity.specialties]
+        if task_lower in specialties:
+            return True
+        if target_node.node_type == NodeType.NPU_ACCELERATOR and task_lower in ("text", "nlp", "embedding", "llm"):
+            return True
+        if target_node.node_type == NodeType.GPU_COMPUTE and task_lower in ("video", "transcode", "raster", "render"):
+            return True
+        if target_node.node_type == NodeType.SOLANA_VALIDATOR and task_lower in ("solana_tx", "rpc", "token", "amm"):
+            return True
+        if target_node.node_type == NodeType.NEURAL_SOLVER and task_lower in ("cfr", "nash", "dossier", "simulation"):
+            return True
+        if target_node.node_type == NodeType.PQC_SIGNER and task_lower in ("pqc", "sign", "verify", "encapsulate"):
+            return True
+        if target_node.node_type == NodeType.GATEWAY and task_lower in ("gateway", "coordination", "orchestrator", "orchestration"):
+            return True
+        return False
+
     def compute_neural_weight(self, target_node: MeshNode, task_type: str) -> float:
         """
         Neural loss function calculating cost for routing a task to target_node:
@@ -61,25 +81,12 @@ class NeuralMeshTopology:
         load_penalty = 1.0 / (1.01 - min(0.99, load))
 
         # 3. Hardware task affinity
-        # Ideal matches have 0.0 penalty; non-ideal matches have high penalty
-        task_lower = task_type.lower()
+        # Ideal matches have 0.1 penalty; non-ideal matches have high penalty
         affinity_penalty = 0.0
-        specialties = [s.lower() for s in target_node.capacity.specialties]
-
-        if task_lower in specialties:
+        if self.has_task_affinity(target_node, task_type):
             affinity_penalty = 0.1
-        elif target_node.node_type == NodeType.NPU_ACCELERATOR and task_lower in ("text", "nlp", "embedding", "llm"):
-            affinity_penalty = 0.1
-        elif target_node.node_type == NodeType.GPU_COMPUTE and task_lower in ("video", "transcode", "raster", "render"):
-            affinity_penalty = 0.1
-        elif target_node.node_type == NodeType.SOLANA_VALIDATOR and task_lower in ("solana_tx", "rpc", "token", "amm"):
-            affinity_penalty = 0.1
-        elif target_node.node_type == NodeType.NEURAL_SOLVER and task_lower in ("cfr", "nash", "dossier", "simulation"):
-            affinity_penalty = 0.1
-        elif target_node.node_type == NodeType.PQC_SIGNER and task_lower in ("pqc", "sign", "verify", "encapsulate"):
-            affinity_penalty = 0.1
-        elif target_node.node_type == NodeType.EDGE_ROUTER:
-            affinity_penalty = 1.0  # Pass-through router
+        elif target_node.node_type in (NodeType.EDGE_ROUTER, NodeType.GATEWAY):
+            affinity_penalty = 1.0  # Pass-through router / gateway
         else:
             affinity_penalty = 8.0  # Mismatched hardware capability
 
@@ -92,44 +99,49 @@ class NeuralMeshTopology:
     def find_optimal_route(self, source_id: str, task_type: str, max_hops: int = 5) -> Optional[List[str]]:
         """
         Dijkstra-based shortest neural weight path from source_id to the most suitable
-        target node in the mesh executing task_type.
+        target node in the mesh executing task_type. Honors max_hops and never routes through
+        or terminates at removed/disconnected nodes.
         """
         if source_id not in self.nodes:
+            return None
+        if not self.nodes[source_id].active:
             return None
 
         # Priority queue: (accumulated_weight, [path_nodes])
         pq: List[Tuple[float, List[str]]] = [(0.0, [source_id])]
-        visited: Dict[str, float] = {source_id: 0.0}
-
-        best_terminal_path: Optional[List[str]] = None
-        best_terminal_weight: float = float("inf")
+        # Keyed by (node_id, hops) to ensure shorter-hop paths aren't pruned by longer lower-weight paths
+        visited: Dict[Tuple[str, int], float] = {(source_id, 0): 0.0}
 
         while pq:
             curr_weight, path = heapq.heappop(pq)
             u = path[-1]
+            hops = len(path) - 1
 
-            if len(path) > max_hops:
+            if hops > max_hops:
                 continue
 
             # Evaluate if current node is a viable terminal executor
             node_u = self.nodes.get(u)
-            if node_u and u != source_id and node_u.node_type != NodeType.EDGE_ROUTER:
-                affinity_cost = self.compute_neural_weight(node_u, task_type)
-                if affinity_cost < 3.0:  # Valid executor
-                    if curr_weight < best_terminal_weight:
-                        best_terminal_weight = curr_weight
-                        best_terminal_path = path
+            if node_u and node_u.active and u != source_id:
+                is_router = node_u.node_type == NodeType.EDGE_ROUTER
+                is_gateway = node_u.node_type == NodeType.GATEWAY
+                allows_gateway = task_type.lower() in ("gateway", "coordination", "orchestrator", "orchestration")
+                if not is_router and (not is_gateway or allows_gateway):
+                    if self.has_task_affinity(node_u, task_type):
+                        return path
 
-            for v in self.adj.get(u, set()):
-                node_v = self.nodes.get(v)
-                if not node_v or not node_v.active:
-                    continue
+            if hops < max_hops:
+                for v in self.adj.get(u, set()):
+                    node_v = self.nodes.get(v)
+                    if not node_v or not node_v.active:
+                        continue
 
-                edge_cost = self.compute_neural_weight(node_v, task_type)
-                next_weight = curr_weight + edge_cost
+                    edge_cost = self.compute_neural_weight(node_v, task_type)
+                    next_weight = curr_weight + edge_cost
+                    next_hops = hops + 1
 
-                if v not in visited or next_weight < visited[v]:
-                    visited[v] = next_weight
-                    heapq.heappush(pq, (next_weight, path + [v]))
+                    if (v, next_hops) not in visited or next_weight < visited[(v, next_hops)]:
+                        visited[(v, next_hops)] = next_weight
+                        heapq.heappush(pq, (next_weight, path + [v]))
 
-        return best_terminal_path or (list(self.nodes.keys())[:1] if self.nodes else None)
+        return None

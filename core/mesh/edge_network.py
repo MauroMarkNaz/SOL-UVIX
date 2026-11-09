@@ -104,8 +104,16 @@ class EdgeNetwork:
         self.topology.add_edge("pqc-signer-01", "solana-rpc-01")
 
         # Auto-load private tailnet configuration if present
-        tailnet_path = os.environ.get("TAILNET_CONFIG_PATH", "config/tailnet.json")
-        if os.path.exists(tailnet_path):
+        tailnet_path = os.environ.get("TAILNET_CONFIG_PATH")
+        if not tailnet_path:
+            repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+            candidate = os.path.join(repo_root, "config", "tailnet.json")
+            if os.path.exists(candidate):
+                tailnet_path = candidate
+            elif os.path.exists("config/tailnet.json"):
+                tailnet_path = "config/tailnet.json"
+
+        if tailnet_path and os.path.exists(tailnet_path):
             self.load_tailnet_topology(tailnet_path)
 
     def register_peer(self, node: MeshNode, connect_to: Optional[List[str]] = None):
@@ -116,11 +124,24 @@ class EdgeNetwork:
             if peer_id in self.topology.nodes:
                 self.topology.add_edge(node.node_id, peer_id)
 
+    def unregister_peer(self, node_id: str):
+        """Unregisters/removes a peer node from the mesh topology."""
+        self.topology.remove_node(node_id)
+        if node_id == "mariphone-27-2-4" and "mariphone" in self.topology.nodes:
+            self.topology.remove_node("mariphone")
+        elif node_id == "mariphone" and "mariphone-27-2-4" in self.topology.nodes:
+            self.topology.remove_node("mariphone-27-2-4")
+
+    def remove_peer(self, node_id: str):
+        """Alias for unregister_peer."""
+        self.unregister_peer(node_id)
+
     def load_tailnet_topology(self, config_or_path: Any):
         """
         Ingests tailnet topology definitions and registers mesh peers according to their tags.
+        Rejects unknown node types instead of silently coercing them.
         """
-        if isinstance(config_or_path, str):
+        if isinstance(config_or_path, (str, os.PathLike)):
             with open(config_or_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         else:
@@ -129,44 +150,101 @@ class EdgeNetwork:
         machines = data.get("machines", [])
         for m in machines:
             name = m.get("name")
+            if not name:
+                continue
             ip = m.get("ip", "127.0.0.1")
             tags = [t.lower() for t in m.get("tags", [])]
             os_name = m.get("os", "unknown").lower()
+            role = m.get("role", "").lower()
 
-            # Infer node type from tags
-            if any(t in tags for t in ["amd", "npu"]):
+            raw_type = m.get("node_type") or m.get("type")
+            if raw_type is not None:
+                if isinstance(raw_type, NodeType):
+                    ntype = raw_type
+                elif isinstance(raw_type, str):
+                    raw_lower = raw_type.lower()
+                    matching = [e for e in NodeType if e.value == raw_lower or e.name.lower() == raw_lower]
+                    if matching:
+                        ntype = matching[0]
+                    else:
+                        raise ValueError(f"Unknown node type '{raw_type}' for machine '{name}'")
+                else:
+                    raise ValueError(f"Unknown node type '{raw_type}' for machine '{name}'")
+            elif "validator" in role or "solana" in role:
+                ntype = NodeType.SOLANA_VALIDATOR
+            elif "gateway" in role or "orchestrator" in role:
+                ntype = NodeType.GATEWAY
+            elif "solver" in role or "neural" in role:
+                ntype = NodeType.NEURAL_SOLVER
+            elif "signer" in role or "pqc" in role:
+                ntype = NodeType.PQC_SIGNER
+            elif "router" in role:
+                ntype = NodeType.EDGE_ROUTER
+            elif "gpu" in role:
+                ntype = NodeType.GPU_COMPUTE
+            elif "npu" in role:
                 ntype = NodeType.NPU_ACCELERATOR
-                specialties = ["text", "nlp", "llm", "embedding"]
+            elif any(t in tags for t in ["amd", "npu"]):
+                ntype = NodeType.NPU_ACCELERATOR
             elif any(t in tags for t in ["gpu", "render", "video"]):
                 ntype = NodeType.GPU_COMPUTE
-                specialties = ["video", "transcode", "raster"]
             elif any(t in tags for t in ["validator", "solana", "wecrypto"]):
                 ntype = NodeType.SOLANA_VALIDATOR
-                specialties = ["solana_tx", "rpc", "token", "amm"]
+            elif any(t in tags for t in ["gateway", "orchestrator"]):
+                ntype = NodeType.GATEWAY
             elif any(t in tags for t in ["ai", "core", "trading"]):
                 ntype = NodeType.NEURAL_SOLVER
-                specialties = ["cfr", "nash", "dossier", "simulation"]
             elif any(t in tags for t in ["custody", "sensitive"]):
                 ntype = NodeType.PQC_SIGNER
-                specialties = ["pqc", "sign", "verify", "encapsulate"]
-            else:
+            elif any(t in tags for t in ["edge_router", "router", "edge"]):
                 ntype = NodeType.EDGE_ROUTER
+            else:
+                raise ValueError(
+                    f"Unknown node type for machine '{name}'. "
+                    f"Unable to infer valid NodeType from role '{role}' or tags {tags}."
+                )
+
+            # Assign specialties
+            if "specialties" in m:
+                specialties = list(m["specialties"])
+            elif ntype == NodeType.NPU_ACCELERATOR:
+                specialties = ["text", "nlp", "llm", "embedding"]
+            elif ntype == NodeType.GPU_COMPUTE:
+                specialties = ["video", "transcode", "raster"]
+            elif ntype == NodeType.SOLANA_VALIDATOR:
+                specialties = ["solana_tx", "rpc", "token", "amm"]
+            elif ntype == NodeType.GATEWAY:
+                specialties = ["gateway", "coordination"]
+            elif ntype == NodeType.NEURAL_SOLVER:
+                specialties = ["cfr", "nash", "dossier", "simulation"]
+            elif ntype == NodeType.PQC_SIGNER:
+                specialties = ["pqc", "sign", "verify", "encapsulate"]
+            elif ntype == NodeType.EDGE_ROUTER:
                 specialties = ["edge_route"]
+            else:
+                specialties = []
+
+            hardware = m.get("hardware", {})
+            tops = float(hardware.get("npu_tops", 0.0))
+            vram_mb = int(hardware.get("vram_mb", 0))
+            bandwidth_mbps = float(m.get("bandwidth_mbps", 1_000.0))
 
             peer_node = MeshNode(
                 node_id=name,
                 node_type=ntype,
                 endpoint=f"tailscale://{ip}",
                 capacity=NodeCapacity(
-                    bandwidth_mbps=1_000,
+                    tops=tops,
+                    vram_mb=vram_mb,
+                    bandwidth_mbps=bandwidth_mbps,
                     compute_type=f"tailnet_{os_name}",
                     specialties=specialties,
                 ),
                 telemetry=NodeTelemetry(
-                    latency_ms=m.get("latency_ms", 5.0),
-                    current_load=m.get("load", 0.1),
+                    latency_ms=float(m.get("latency_ms", 5.0)),
+                    current_load=float(m.get("load", 0.1)),
                 ),
-                metadata={"tags": tags, "os": os_name, "tailscale_ip": ip}
+                metadata={"tags": tags, "os": os_name, "tailscale_ip": ip, "hardware": hardware}
             )
 
             self.topology.add_node(peer_node)
@@ -175,9 +253,33 @@ class EdgeNetwork:
             if "local-xdna2-npu" in self.topology.nodes:
                 self.topology.add_edge("local-xdna2-npu", name)
 
+            # Support shorthand estate alias if name has trailing version/hash suffix
+            # e.g., 'mariphone-27-2-4' -> 'mariphone'
+            if "-" in name and not name.startswith("local-") and not name.startswith("edge-"):
+                base_alias = name.split("-")[0]
+                if base_alias not in self.topology.nodes and base_alias in ("mariphone",):
+                    alias_node = MeshNode(
+                        node_id=base_alias,
+                        node_type=ntype,
+                        endpoint=f"tailscale://{ip}",
+                        capacity=peer_node.capacity,
+                        telemetry=peer_node.telemetry,
+                        metadata={**peer_node.metadata, "canonical_id": name, "alias": True}
+                    )
+                    self.topology.add_node(alias_node)
+                    self.topology.add_edge("edge-worker-01", base_alias)
+                    if "local-xdna2-npu" in self.topology.nodes:
+                        self.topology.add_edge("local-xdna2-npu", base_alias)
+
     def route_task(self, task_type: str, source_node: str = "edge-worker-01") -> Optional[Dict[str, Any]]:
         """Calculates optimal neural route and target executor node for a given task."""
-        path = self.topology.find_optimal_route(source_node, task_type)
+        # Resolve shorthand alias if source_node isn't directly present
+        resolved_source = source_node
+        if source_node not in self.topology.nodes:
+            if source_node == "mariphone" and "mariphone-27-2-4" in self.topology.nodes:
+                resolved_source = "mariphone-27-2-4"
+
+        path = self.topology.find_optimal_route(resolved_source, task_type)
         if not path:
             return None
 
@@ -194,10 +296,17 @@ class EdgeNetwork:
 
     def get_mesh_status(self) -> Dict[str, Any]:
         """Returns comprehensive telemetry of the entire edge neural mesh."""
+        total_nodes = len(self.topology.nodes)
+        active_nodes = sum(1 for n in self.topology.nodes.values() if n.active)
         return {
             "network_name": self.network_name,
-            "total_nodes": len(self.topology.nodes),
-            "active_nodes": sum(1 for n in self.topology.nodes.values() if n.active),
+            "total_nodes": total_nodes,
+            "active_nodes": active_nodes,
             "nodes": {nid: node.to_dict() for nid, node in self.topology.nodes.items()},
             "topology_edges": {nid: list(neighbors) for nid, neighbors in self.topology.adj.items()},
+            "mesh_healthy": active_nodes > 0 and active_nodes == total_nodes,
+            "estate_nodes": [
+                nid for nid, node in self.topology.nodes.items()
+                if node.endpoint.startswith("tailscale://")
+            ],
         }
