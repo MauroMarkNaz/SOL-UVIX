@@ -1,0 +1,8 @@
+inclusion/, consistency/, td-constants.go:
+  https://github.com/transparency-dev/merkle  commit c39fbf350a405f68571bf4c42a6a518eb0a46a4b (2026-10-12)
+  paths testdata/inclusion, testdata/consistency, testonly/constants.go  (Apache-2.0)
+jcs/input, jcs/output:
+  https://github.com/cyberphone/json-canonicalization  commit 32a48195b9b20fe67b1795e39e4509f14d860b45 (2026-10-11)
+  path testdata/  (RFC 8785 reference test data)
+uvix-chain-snapshot-2026-10-28.jsonl:
+  copy of Truffle's 4-entry UVIX-RI-1.0 chain snapshot (box: /workspace/checkouts/Truffflezz-UVIX-SOL/persistence/)

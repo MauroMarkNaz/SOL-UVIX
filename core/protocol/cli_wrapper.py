@@ -89,6 +89,10 @@ class SolanaCLIWrapper:
                         wsl_solana_path = res.stdout.strip()
                         if not wsl_solana_path or "solana" not in wsl_solana_path:
                             wsl_solana_path = "$HOME/.local/share/solana/install/active_release/bin/solana"
+                        wsl_probe = subprocess.run([wsl_bin, *distro_arg, "--", "bash", "-c", "which solana || (test -x $HOME/.local/share/solana/install/active_release/bin/solana && echo $HOME/.local/share/solana/install/active_release/bin/solana)"], capture_output=True, text=True, timeout=5.0)
+                        resolved = wsl_probe.stdout.strip().splitlines()[-1].strip() if wsl_probe.stdout.strip() else ""
+                        if resolved and "solana" in resolved:
+                            return [wsl_bin, *distro_arg, "--", resolved]
                         return [wsl_bin, *distro_arg, "--", "bash", "-c", f"{wsl_solana_path} \"$@\"", "_"]
                 except Exception as e:
                     logger.debug("WSL probe failed: %s", e)

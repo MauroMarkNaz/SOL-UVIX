@@ -29,3 +29,6 @@ dev = [
 
 [project.scripts]
 sol-uvix = "sol_uvix.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["core*", "sol_uvix*"]
