@@ -1,0 +1,15 @@
+{
+  "name": "mistral-edge-worker",
+  "version": "1.0.0",
+  "description": "Mistral-compatible AI Gateway & Workers AI endpoint at mistral.leaksnipe.win",
+  "main": "src/index.ts",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "typescript": "^5.5.4",
+    "wrangler": "^3.78.0"
+  }
+}

@@ -1,0 +1,411 @@
+{
+  "UVIX": {
+    "slug": "UVIX",
+    "version": "1.3.0",
+    "protocol": "UVIX-RI-1.0",
+    "status": "ACTIVE",
+    "enabled": true,
+    "envelope_format": "UVIX::<base64>::END",
+    "compatibility_layer": "UVIX.MCP.APEX",
+    "natural_gemini_interface": "https://gemini.leaksnipe.win/uvix/v1/ingest",
+    "MCP": {
+      "CONNECTORS": {
+        "UVIX.MCP.APEX": {
+          "id": 1,
+          "name": "leaksnipe-apex-mcp",
+          "hierarchy_slug": "UVIX.MCP.APEX",
+          "canonical_id": "uvix:apex",
+          "worker": "leaksnipe",
+          "url": "https://leaksnipe.win/mcp",
+          "sse_url": "https://leaksnipe.win/sse",
+          "uvix_url": "https://leaksnipe.win/uvix",
+          "iphone_connector": true,
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.MCP.SUITE": {
+          "id": 2,
+          "name": "leaksnipe-suite-mcp",
+          "hierarchy_slug": "UVIX.MCP.SUITE",
+          "canonical_id": "uvix:suite",
+          "worker": "leaksnipe-suite",
+          "url": "https://leaksnipe-suite.gitgoin87.workers.dev/mcp",
+          "sse_url": "https://leaksnipe-suite.gitgoin87.workers.dev/sse",
+          "uvix_url": "https://leaksnipe-suite.gitgoin87.workers.dev/uvix",
+          "iphone_connector": true,
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.MCP.D1": {
+          "id": 3,
+          "name": "cloudflare-mcp-d1-connector",
+          "hierarchy_slug": "UVIX.MCP.D1",
+          "canonical_id": "uvix:d1",
+          "worker": "cloudflare-mcp-d1-connector",
+          "url": "https://cloudflare-mcp-d1-connector.gitgoin87.workers.dev/mcp",
+          "sse_url": "https://cloudflare-mcp-d1-connector.gitgoin87.workers.dev/sse",
+          "uvix_url": "https://cloudflare-mcp-d1-connector.gitgoin87.workers.dev/uvix",
+          "iphone_connector": true,
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.MCP.GOOGLE": {
+          "id": 4,
+          "name": "google-leaksnipe-sse",
+          "hierarchy_slug": "UVIX.MCP.GOOGLE",
+          "canonical_id": "uvix:google",
+          "worker": "edge-proxy-gemini",
+          "url": "https://google.leaksnipe.win/sse",
+          "mcp_url": "https://google.leaksnipe.win/mcp",
+          "gemini_mcp_url": "https://gemini.leaksnipe.win/mcp",
+          "uvix_url": "https://google.leaksnipe.win/uvix",
+          "ingest_url": "https://gemini.leaksnipe.win/uvix/v1/ingest",
+          "iphone_connector": true,
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.MCP.ANTIGRAVITY": {
+          "id": 5,
+          "name": "uvix-neural-mcp",
+          "label": "UVIX Antigravity Neural Mesh Connector",
+          "hierarchy_slug": "UVIX.MCP.ANTIGRAVITY",
+          "canonical_id": "uvix:antigravity",
+          "worker": "leaksnipe-mcp",
+          "url": "https://mcp.leaksnipe.win/mcp",
+          "sse_url": "https://mcp.leaksnipe.win/sse",
+          "uvix_url": "https://mcp.leaksnipe.win/uvix",
+          "tailscale_url": "https://antigravity.prairiedog-godzilla.ts.net/mcp",
+          "tailnet_ip": "100.73.25.41",
+          "tailnet_host": "antigravity.prairiedog-godzilla.ts.net",
+          "rpc_endpoint": "tcp://antigravity.prairiedog-godzilla.ts.net:49771",
+          "iphone_connector": true,
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.MCP.POKER": {
+          "hierarchy_slug": "UVIX.MCP.POKER",
+          "canonical_id": "uvix:mcp",
+          "worker": "leaksnipe-mcp",
+          "url": "https://mcp.leaksnipe.win/mcp",
+          "sse_url": "https://mcp.leaksnipe.win/sse",
+          "uvix_url": "https://mcp.leaksnipe.win/uvix",
+          "iphone_connector": false,
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.MCP.MUSE": {
+          "hierarchy_slug": "UVIX.MCP.MUSE",
+          "canonical_id": "uvix:muse",
+          "worker": "muse-mcp",
+          "url": "https://muse.leaksnipe.win/mcp",
+          "sse_url": "https://muse.leaksnipe.win/sse",
+          "iphone_connector": false,
+          "status": "ACTIVE",
+          "enabled": true
+        }
+      }
+    },
+    "INFERENCE": {
+      "hierarchy_slug": "UVIX.INFERENCE",
+      "policy": "local-first -> cloudflare-ai-gateway -> frontier-api -> workers-ai",
+      "status": "ACTIVE",
+      "enabled": true,
+      "tiers": {
+        "UVIX.INFERENCE.LOCAL": {
+          "hierarchy_slug": "UVIX.INFERENCE.LOCAL",
+          "canonical_id": "uvix:inference:local",
+          "tailscale_host": "maurotufgamingp.prairiedog-godzilla.ts.net",
+          "tailscale_ip": "100.72.42.61",
+          "services": {
+            "gemini_agent": "http://100.72.42.61:8003",
+            "jdwalkaz_llm_bridge": "https://maurotufgamingp.prairiedog-godzilla.ts.net:8040/bridge",
+            "truffle_uagent": "https://maurotufgamingp.prairiedog-godzilla.ts.net:8002/truffle",
+            "lemonade_reins": "RTX 4070 (image) + NPU (text) + local Qwen (bulk)"
+          },
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.INFERENCE.AIG": {
+          "hierarchy_slug": "UVIX.INFERENCE.AIG",
+          "canonical_id": "uvix:inference:aig",
+          "gateways": [
+            "wecryp-unified",
+            "default"
+          ],
+          "base_url": "https://gateway.ai.cloudflare.com/v1/f226035af09775dbffd7e6350adc8a12/wecryp-unified",
+          "model_subdomains": {
+            "ai": "https://ai.leaksnipe.win",
+            "asi1": "https://asi1.leaksnipe.win",
+            "claude": "https://claude.leaksnipe.win",
+            "openai": "https://openai.leaksnipe.win",
+            "grok": "https://grok.leaksnipe.win",
+            "deepseek": "https://deepseek.leaksnipe.win",
+            "perplexity": "https://perplexity.leaksnipe.win",
+            "minimax": "https://minimax.leaksnipe.win",
+            "kimi": "https://kimi.leaksnipe.win",
+            "mistral": "https://mistral.leaksnipe.win",
+            "glm": "https://glm.leaksnipe.win",
+            "qwen": "https://qwen.leaksnipe.win",
+            "nemotron": "https://nemotron.leaksnipe.win",
+            "llama": "https://llama.leaksnipe.win",
+            "gemma": "https://gemma.leaksnipe.win"
+          },
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.INFERENCE.WORKERS_AI": {
+          "hierarchy_slug": "UVIX.INFERENCE.WORKERS_AI",
+          "canonical_id": "uvix:inference:workers-ai",
+          "binding": "AI",
+          "default_model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+          "fast_model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.INFERENCE.SOLVER": {
+          "hierarchy_slug": "UVIX.INFERENCE.SOLVER",
+          "canonical_id": "uvix:inference:solver",
+          "endpoint": "https://uvix.leaksnipe.win/uvix/solve",
+          "circuit_breaker_ms": 200,
+          "failover_d1": "LEAKSNIPE_D1 (leaksnipe-gto.gto_stack_charts)",
+          "status": "ACTIVE",
+          "enabled": true
+        }
+      }
+    },
+    "DATA": {
+      "hierarchy_slug": "UVIX.DATA",
+      "doctrine": "PYTH_AND_ORACLE_ONLY (Never CoinGecko, never raw CEX tape)",
+      "status": "ACTIVE",
+      "enabled": true,
+      "oracles": {
+        "UVIX.DATA.ORACLE.PYTH": {
+          "hierarchy_slug": "UVIX.DATA.ORACLE.PYTH",
+          "canonical_id": "uvix:data:pyth",
+          "hermes_v2": "https://hermes.pyth.network/v2/updates/price/latest",
+          "edge_url": "https://scalper.leaksnipe.win/api/spot?source=pyth",
+          "role": "PRIMARY SPOT ORACLE",
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.DATA.ORACLE.DIA": {
+          "hierarchy_slug": "UVIX.DATA.ORACLE.DIA",
+          "canonical_id": "uvix:data:dia",
+          "worker": "dia-proxy",
+          "edge_url": "https://dia.leaksnipe.win/quotations",
+          "divergence_threshold_pct": 1,
+          "role": "SECONDARY CROSS-CHECK ORACLE (>1% divergence flag)",
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.DATA.ORACLE.BRTI": {
+          "hierarchy_slug": "UVIX.DATA.ORACLE.BRTI",
+          "canonical_id": "uvix:data:brti",
+          "worker": "wecryp-price-proxy",
+          "edge_url": "https://price.leaksnipe.win/spot",
+          "role": "CF BENCHMARKS BRTI COMPOSITE",
+          "status": "ACTIVE",
+          "enabled": true
+        }
+      },
+      "markets": {
+        "UVIX.DATA.KALSHI": {
+          "hierarchy_slug": "UVIX.DATA.KALSHI",
+          "canonical_id": "uvix:data:kalshi",
+          "worker": "kalshi-ladder-worker",
+          "ladder_url": "https://ladder.leaksnipe.win/ladder",
+          "bands_url": "https://scalper.leaksnipe.win/api/kalshi/bands",
+          "updown_url": "https://scalper.leaksnipe.win/api/kalshi/updown",
+          "orderbook_url": "https://scalper.leaksnipe.win/api/kalshi/orderbook",
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.DATA.POLYMARKET": {
+          "hierarchy_slug": "UVIX.DATA.POLYMARKET",
+          "canonical_id": "uvix:data:polymarket",
+          "worker": "scalper-market-data",
+          "hourly_updown_url": "https://scalper.leaksnipe.win/api/polymarket/hourly-updown",
+          "twap_updown_url": "https://scalper.leaksnipe.win/api/polymarket/twap-updown",
+          "status": "ACTIVE",
+          "enabled": true
+        },
+        "UVIX.DATA.DERIVS": {
+          "hierarchy_slug": "UVIX.DATA.DERIVS",
+          "canonical_id": "uvix:data:derivs",
+          "worker": "scalper-market-data",
+          "summary_url": "https://scalper.leaksnipe.win/api/derivs/summary",
+          "status": "ACTIVE",
+          "enabled": true
+        }
+      },
+      "d1_databases": {
+        "google": {
+          "alias": "google",
+          "binding": "DB_GOOGLE",
+          "id": "001e31f4-52ad-4514-8d64-1bd7f0ab3e20",
+          "name": "google"
+        },
+        "scalper": {
+          "alias": "scalper",
+          "binding": "DB_SCALPER",
+          "id": "48536b22-03b3-42dd-92fa-44feab144d84",
+          "name": "scalper-calibration"
+        },
+        "opponents": {
+          "alias": "opponents",
+          "binding": "DB_OPPONENTS",
+          "id": "caae95aa-2359-41c8-ab44-13e4860a1d01",
+          "name": "opponents"
+        },
+        "leaksnipe": {
+          "alias": "leaksnipe",
+          "binding": "DB_LEAKSNIPE",
+          "id": "9a9ba1db-5e5e-4fd7-9ff4-bcd6e25ddc2e",
+          "name": "leaksnipe-hands"
+        },
+        "mem": {
+          "alias": "mem",
+          "binding": "DB_MEM_WARM",
+          "id": "5fdf4acc-28d6-4899-969c-f227675d52d1",
+          "name": "mem-warm"
+        },
+        "wecrypto": {
+          "alias": "wecrypto",
+          "binding": "WECRYPTO_D1",
+          "id": "4f534c4a-b8e3-4381-a2eb-29e44ba3e825",
+          "name": "wecrypto"
+        },
+        "gto": {
+          "alias": "gto",
+          "binding": "LEAKSNIPE_D1",
+          "id": "4ec94b34-1766-4104-bdb6-e83c3b9a6f60",
+          "name": "leaksnipe-gto"
+        },
+        "truffles": {
+          "alias": "truffles",
+          "binding": "DB_TRUFFLES",
+          "id": "29db0cc7-cdbf-4a3a-8ca8-329c1b3f279e",
+          "name": "truffles-memory"
+        }
+      }
+    },
+    "MEM": {
+      "hierarchy_slug": "UVIX.MEM",
+      "gateway": {
+        "hierarchy_slug": "UVIX.MEM.GATEWAY",
+        "canonical_id": "uvix:memgw",
+        "worker": "mem-gateway",
+        "url": "https://memgw.leaksnipe.win",
+        "hot_kv": "04f218108ae84ea08ddb2b7fe4c8081e",
+        "warm_d1": "5fdf4acc-28d6-4899-969c-f227675d52d1"
+      },
+      "origin": {
+        "hierarchy_slug": "UVIX.MEM.ORIGIN",
+        "canonical_id": "uvix:mem",
+        "url": "https://mem.leaksnipe.win",
+        "tailscale_url": "http://100.72.42.61:37777"
+      },
+      "status": "ACTIVE",
+      "enabled": true
+    },
+    "REPO": {
+      "hierarchy_slug": "UVIX.REPO",
+      "boss_canonical": "https://gitlab.com/walkershooligans/wecrypto (maurofanellijr)",
+      "head_github_mirror": "https://github.com/MauroMarkNaz",
+      "outpost_github_mirror": "https://github.com/MauroMarkNaz/root",
+      "secondary_github_mirror": "https://github.com/GBOSS101/WE-CRYPTO-"
+    },
+    "INTEGRATION": {
+      "COINBASE_CDP": {
+        "hierarchy_slug": "UVIX.INTEGRATION.COINBASE_CDP",
+        "canonical_id": "uvix:integration:coinbase-cdp",
+        "cli_package": "@coinbase/cdp-cli",
+        "cli_version": "2.0.120",
+        "mcp_command": "cdp mcp",
+        "mcp_tools_count": 136,
+        "docs_mcp_url": "https://docs.cdp.coinbase.com/mcp",
+        "status": "ACTIVE",
+        "enabled": true
+      }
+    }
+  },
+  "tailscale_mesh": {
+    "slug": "UVIX",
+    "hierarchy_slug": "UVIX.MESH.TAILSCALE",
+    "tailnet": "prairiedog-godzilla.ts.net",
+    "magic_dns_enabled": true,
+    "nodes": {
+      "maurotufgamingp": {
+        "dns": "maurotufgamingp.prairiedog-godzilla.ts.net",
+        "ipv4": "100.72.42.61",
+        "ipv6": "fd7a:115c:a1e0::1e3a:2a3e",
+        "os": "windows",
+        "role": "Primary Command & Local Inference Host (RTX 4070 + NPU + WECFM + Bridges)",
+        "services": {
+          "claude_mem": "http://100.72.42.61:37777",
+          "jdwalkaz_bridge": "https://maurotufgamingp.prairiedog-godzilla.ts.net:8040/bridge",
+          "truffle_uagent": "https://maurotufgamingp.prairiedog-godzilla.ts.net:8002/truffle",
+          "gemini_agent": "http://100.72.42.61:8003",
+          "wecrypto_bridge": "http://100.72.42.61:8788",
+          "http_bouncer": "http://100.72.42.61:3010",
+          "mullvad_socks5": "socks5://127.0.0.1:18090"
+        }
+      },
+      "maurotufgamingp_wsl": {
+        "dns": "maurotufgamingp-wsl.prairiedog-godzilla.ts.net",
+        "ipv4": "100.81.150.124",
+        "os": "linux",
+        "role": "Solana Validator Worker / WSL Subnet Node"
+      },
+      "antigravity": {
+        "dns": "antigravity.prairiedog-godzilla.ts.net",
+        "ipv4": "100.73.25.41",
+        "os": "windows",
+        "role": "Google Antigravity Autonomous Agent Platform & RPC Gateway",
+        "services": {
+          "antigravity_web": "https://antigravity.prairiedog-godzilla.ts.net",
+          "antigravity_rpc": "tcp://antigravity.prairiedog-godzilla.ts.net:49771",
+          "tailscale_web": "http://100.72.42.61:5252"
+        }
+      },
+      "mariphone": {
+        "dns": "mariphone-27-2-4.prairiedog-godzilla.ts.net",
+        "ipv4": "100.68.129.57",
+        "ipv6": "fd7a:115c:a1e0::fa3a:8139",
+        "os": "iOS",
+        "role": "Mauro iPhone Gemini Mobile Client (5 MCP/SSE Connectors)"
+      },
+      "muse": {
+        "dns": "muse.prairiedog-godzilla.ts.net",
+        "ipv4": "100.115.113.70",
+        "ipv6": "fd7a:115c:a1e0::6b3a:7146",
+        "os": "linux",
+        "role": "Muse Autonomous Agent Node"
+      },
+      "glap": {
+        "dns": "glap.prairiedog-godzilla.ts.net",
+        "ipv4": "100.119.12.97",
+        "ipv6": "fd7a:115c:a1e0::cf37:c61",
+        "os": "windows",
+        "primary_routes": [
+          "100.74.243.241/32",
+          "100.103.41.130/32",
+          "fd7a:115c:a1e0::3e3a:f3f2/128",
+          "fd7a:115c:a1e0::c03a:2983/128"
+        ],
+        "role": "Secondary Windows Workstation + Subnet Router"
+      },
+      "glap_wsl": {
+        "dns": "glap-wsl.prairiedog-godzilla.ts.net",
+        "ipv4": "100.99.103.30",
+        "ipv6": "fd7a:115c:a1e0::c93a:671e",
+        "os": "linux",
+        "allowed_ips": [
+          "0.0.0.0/0",
+          "::/0"
+        ],
+        "role": "WSL Exit / Subnet Node"
+      }
+    }
+  }
+}
