@@ -1,49 +1,95 @@
-# AI Poker Coach - Workspace Instructions
+# UVIX Copilot Instructions
 
-## Project Overview
-This project implements a Post-Quantum Cryptography (PQC) toolkit for secure communication and data storage, likely intended for an AI Poker Coach application requiring high security. It adheres to NIST standardization (FIPS 203/204).
+## Project shape
 
-## Core Technologies
-- **Language**: Python 3.8+
-- **Cryptography**: 
-  - `quantcrypt` (NIST PQC: ML-KEM, ML-DSA)
-  - `cryptography` (Hybrid encryption: AES-GCM, HKDF)
-- **Key Standards**: 
-  - Key Encapsulation: ML-KEM-1024, ML-KEM-768, ML-KEM-512
-  - Digital Signatures: ML-DSA-87, ML-DSA-65, ML-DSA-44
+UVIX is the substrate-neutral protocol and orchestration repository. The Solana
+Anchor ledger/program implementation lives in the companion `UVIX-SOL` repository;
+keep chain-specific program logic there rather than duplicating it here.
 
-## Architecture and Patterns
-- **Modular Design**: 
-  - `pqc.py`: Core cryptographic primitives and key management.
-  - `pqc_api.py`: Mixin for securing API clients.
-  - `pqc_files.py`: File encryption service.
-- **Import Strategy**: Uses `try-except ImportError` blocks to support both library usage and direct script execution (e.g., `from .pqc import ...` vs `from pqc import ...`).
-- **Key Management**:
-  - Runtime keys stored in `~/.pqc-keys` (handled by `PQCKeyStore`).
-  - Repository artifacts (like trusted public keys) stored in `security/`.
+The Python implementation is organized under `core/`: protocol code defines the
+shared envelope and bridge APIs, mesh code models nodes and routes work, and
+intelligence code coordinates poker analysis, inference, dossiers, and vector
+storage. Hardware orchestration dispatches text/embedding work to the NPU and
+video/raster work to the GPU. Cloudflare Worker entry points under `edge/` are a
+separate deployment surface; do not confuse them with the in-process mesh router.
+Root-level Python modules remain compatibility entry points for the reorganized
+`core/` modules.
 
-## Coding Conventions
-- **Type Hinting**: Use strict type hints (`typing` module) for all function arguments and return values.
-- **Docstrings**: 
-  - Module-level docstrings must include a "Usage" section with copy-pasteable examples.
-  - Class and method docstrings should clearly describe behavior, arguments, and return values.
-  - See `pqc.py` or `pqc_files.py` for the standard docstring format.
-- **Error Handling**: Use specific exceptions (`ValueError`, `ImportError`) over generic ones.
+## Build, test, and lint
 
-## Security Guidelines
-- **NIST Compliance**: Always prioritize FIPS 203/204 algorithms (ML-KEM, ML-DSA).
-- **Hybrid Encryption**: Use PQC for key exchange/encapsulation, but rely on standard AES-GCM for symmetric data encryption (as implemented in `pqc.py` logic).
-- **Cleanup**: Ensure sensitive key material (especially private keys) is handled securely and temporary files are cleaned up (see `REVIEW_TASKS.md` regarding `pqc_files.py`).
+Python 3.10+ is required. The CI installation and test commands are:
 
-## Common Tasks (Ref: REVIEW_TASKS.md)
-- Verify API method names in examples (e.g., `generate_encryption_keypair` vs `generate_keypair`).
-- Validate inputs (e.g., `security_level` arguments).
-- Maintain documentation alignment with implementation (especially key storage paths).
+```bash
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+python -m pytest tests/ -v
+```
 
-## Build and Test
-- **Installation**: `pip install quantcrypt cryptography`
-- **Testing**: Currently relies on `python pqc_files.py test` (needs refactoring for hermeticity).
+Run one Python test by node ID, for example:
 
-## Anti-Patterns
-- **Hardcoding Paths**: Avoid hardcoding paths outside of default constants. Use `pathlib.Path`.
-- **Ignoring Imports**: Do not remove the `try-except` import guard; it is essential for the module's dual usage.
+```bash
+python -m pytest tests/test_slug_topology.py::test_uvix_uri_parsing -v
+```
+
+The Node.js 20 CI check verifies cross-runtime envelope compatibility:
+
+```bash
+node tests/test_roundtrip.js
+```
+
+The GitLab package job builds the Python distribution with:
+
+```bash
+python -m pip install build
+python -m build
+```
+
+## Protocol and mesh contracts
+
+- `core/protocol/codec.py` is the canonical UVIX envelope implementation. Keep
+  the `UVIX::<base64>::END` framing and deterministic compact, key-sorted JSON
+  hashing compatible across Python and JavaScript. If the wire format or hash
+  changes, update the normative spec and cross-runtime test vectors together.
+- Keep malformed-envelope errors distinct from integrity failures. Decoding
+  with integrity verification enabled must reject a hash mismatch rather than
+  return a best-effort payload.
+- Mesh route selection belongs to `NeuralMeshTopology.find_optimal_route`;
+  `EdgeNetwork.route_task` and `NeuralMeshRouter` should delegate to it rather
+  than implement competing path logic. Preserve task-affinity checks, inactive
+  node pruning, hop limits, and the existing mesh-status shape (add fields
+  without removing or renaming existing ones).
+- Tailnet configuration uses explicit node type/role/tag classification.
+  Reject unknown node types instead of silently mapping them to another type.
+- The `.github/agents/` UVIX specialists document subsystem-specific seams and
+  invariants. Resolve their file paths relative to the repository being edited.
+
+## Python and configuration conventions
+
+- Keep package implementations under `core/`; preserve root compatibility
+  entry points and the existing import fallbacks where modules support both
+  package and direct-script use.
+- Use `pathlib.Path` for filesystem paths and preserve the existing typed,
+  dataclass-based APIs and return shapes when extending them.
+- Public modules use descriptive docstrings with runnable usage examples.
+  Raise specific errors for invalid input and preserve established exception
+  types, especially protocol format versus integrity errors.
+- Inference provider settings and model routing live in `config/models.json`.
+  Credentials are read from environment variables named by that configuration;
+  do not place credential values in config files, source, logs, or envelopes.
+- `config/tailnet.template.json` is the checked-in template. Mesh code may load
+  a local `config/tailnet.json` or the path named by `TAILNET_CONFIG_PATH`;
+  avoid committing machine-specific tailnet data.
+
+## Cryptography and operational safety
+
+- Preserve the PQC design: ML-KEM/ML-DSA via `quantcrypt` where available,
+  HKDF-derived keys, and AES-GCM for bulk encryption. `core/crypto/pqc.py` has
+  an X25519/Ed25519 compatibility fallback when `quantcrypt` is unavailable;
+  do not describe that fallback as FIPS post-quantum protection.
+- Runtime private keys belong in `~/.pqc-keys`; repository security artifacts
+  are public keys only. Never log, commit, or expose private key material.
+- Follow `.cursor/rules/solana-mcp.mdc` for Solana documentation and Rust
+  program work; the on-chain program itself belongs in the companion repository.
+- Treat routes, simulations, and analysis as non-authorizing. Do not execute
+  trades, on-chain writes, commits, or ACL changes without an explicit user
+  command in the current task.

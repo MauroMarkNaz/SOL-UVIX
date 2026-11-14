@@ -172,7 +172,7 @@ class EdgeNetwork:
                     raise ValueError(f"Unknown node type '{raw_type}' for machine '{name}'")
             elif "validator" in role or "solana" in role:
                 ntype = NodeType.SOLANA_VALIDATOR
-            elif "gateway" in role or "orchestrator" in role:
+            elif "gateway" in role or "orchestrator" in role or "autonomous_core" in role:
                 ntype = NodeType.GATEWAY
             elif "solver" in role or "neural" in role:
                 ntype = NodeType.NEURAL_SOLVER
