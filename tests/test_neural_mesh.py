@@ -21,6 +21,47 @@ from core.mesh import (
 from core.protocol.codec import decode_uvix_slug
 
 
+ESTATE_TAILNET = {
+    "machines": [
+        {
+            "name": "maurotufgamingp",
+            "ip": "198.51.100.10",
+            "tags": ["amd", "gpu"],
+            "hardware": {"npu_tops": 50.0, "vram_mb": 8188},
+        },
+        {
+            "name": "maurotufgamingp-wsl",
+            "ip": "198.51.100.11",
+            "role": "solana_validator_worker",
+            "tags": ["wsl", "amd", "ai"],
+            "latency_ms": 1.5,
+        },
+        {
+            "name": "mariphone-27-2-4",
+            "ip": "198.51.100.12",
+            "tags": ["mobile", "edge"],
+        },
+        {
+            "name": "muse-1",
+            "ip": "198.51.100.13",
+            "role": "solana_validator_worker",
+            "latency_ms": 20.0,
+        },
+        {
+            "name": "antigravity-agent",
+            "ip": "198.51.100.14",
+            "role": "antigravity_autonomous_core",
+        },
+    ]
+}
+
+
+def _estate_network():
+    net = EdgeNetwork()
+    net.load_tailnet_topology(ESTATE_TAILNET)
+    return net
+
+
 def test_mesh_node_initialization_and_telemetry():
     node = MeshNode(
         node_id="test-npu-01",
@@ -236,7 +277,7 @@ def test_graph_mutation_adjacency_and_metrics():
 
 
 def test_tailnet_topology_role_and_hardware_ingestion():
-    net = EdgeNetwork()
+    net = _estate_network()
     assert "maurotufgamingp-wsl" in net.topology.nodes
     wsl_node = net.topology.nodes["maurotufgamingp-wsl"]
     # Role 'solana_validator_worker' must map to SOLANA_VALIDATOR, not NPU
@@ -323,7 +364,7 @@ def test_unknown_node_type_rejection():
 
 def test_mesh_status_shape_and_estate_nodes():
     """Verify get_mesh_status() shape and compatibility with expanded estate nodes."""
-    net = EdgeNetwork()
+    net = _estate_network()
     status = net.get_mesh_status()
 
     # Stable schema assertions (additive keys only)
@@ -350,7 +391,7 @@ def test_mesh_status_shape_and_estate_nodes():
 
 def test_peer_registration_and_routing_roundtrip():
     """Test full peer lifecycle: dynamic registration, routing priority, and removal fallback."""
-    net = EdgeNetwork()
+    net = _estate_network()
 
     # Initial route for solana_tx goes to maurotufgamingp-wsl (1.5ms)
     initial_route = net.route_task("solana_tx", source_node="edge-worker-01")
@@ -384,7 +425,7 @@ def test_peer_registration_and_routing_roundtrip():
 
 def test_gateway_coordination_routing():
     """Verify coordination task routing reaches antigravity-agent gateway."""
-    net = EdgeNetwork()
+    net = _estate_network()
     route = net.route_task("coordination", source_node="edge-worker-01")
     assert route is not None
     assert route["target_node"]["node_id"] == "antigravity-agent"
